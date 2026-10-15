@@ -54,6 +54,10 @@ function createWindow() {
   });
 
   win.once('ready-to-show', () => {
+    // La aplicacion se abre siempre maximizada
+    if (process.env.IASOLGES_NO_MAXIMIZE !== '1') {
+      try { win.maximize(); } catch (_) { /* ignore */ }
+    }
     const vistaArg = process.argv.find((a) => a.startsWith('--vista='));
     if (vistaArg) {
       const vista = vistaArg.split('=')[1];
@@ -227,7 +231,7 @@ function registerIpc() {
   });
 
   /* --- Credenciales del titular --- */
-  handle('credentials:get', () => {
+  handle('credentials:get', (_evt, revelar = false) => {
     const g = config.getSettings().github || {};
     return {
       titular: TITULAR,

@@ -5,8 +5,9 @@ import { BackHome, Card, Loading, useToast } from '../lib/ui.jsx';
 export default function Credenciales({ info, settings, navigate }) {
   const { push } = useToast();
   const [data, setData] = useState(null);
+  const [revelar, setRevelar] = useState(false);
 
-  useEffect(() => { api.credentials().then(setData).catch((e) => push(e.message, 'error')); }, []); // eslint-disable-line
+  useEffect(() => { api.credentials(revelar).then(setData).catch((e) => push(e.message, 'error')); }, [revelar]); // eslint-disable-line
 
   if (!data) return <Loading text="Cargando credenciales..." />;
 
@@ -52,7 +53,17 @@ export default function Credenciales({ info, settings, navigate }) {
               <dt>Repositorio</dt><dd className="mono">{data.github.repo}</dd>
               <dt>URL</dt><dd className="mono tiny">{data.github.url}</dd>
               <dt>Token</dt>
-              <dd className="mono">{data.github.tokenCompleto ? data.github.token : 'No configurado'}</dd>
+              <dd className="mono">
+                {data.github.tokenCompleto ? data.github.token : 'No configurado'}
+                {data.github.tokenCompleto && (
+                  <button className="btn ghost sm" style={{ marginLeft: 8 }} onClick={() => setRevelar((v) => !v)}>
+                    {revelar ? '🙈 Ocultar' : '👁 Mostrar'}
+                  </button>
+                )}
+                {data.github.tokenCompleto && (
+                  <button className="btn ghost sm" onClick={() => copiar(data.github.token, 'Token')} title="Copiar">📋</button>
+                )}
+              </dd>
             </dl>
             <div className="alert warn small">
               <div>

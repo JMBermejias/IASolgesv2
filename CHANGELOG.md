@@ -2,6 +2,18 @@
 
 Todas las novedades de IASolges.v2.
 
+## [2.0.1] - 2026-10-15
+
+### Anadido
+- La aplicacion **se abre maximizada** al arrancar.
+- Boton para **mostrar y copiar el token de GitHub** en el apartado Credenciales.
+- `npm run release`: publica una nueva release (version, commit, tag, push y `.deb`) en un solo paso.
+
+### Corregido
+- Teselas del mapa sin clave de API (se usan las estandar de OpenStreetMap).
+- Centro del mapa invalido al cambiar de ubicacion y estabilidad del listado de clientes.
+- Procesamiento de JSON truncado en las respuestas de la IA (reintento de reparacion).
+
 ## [2.0.0] - 2026-10-15
 
 ### Anadido

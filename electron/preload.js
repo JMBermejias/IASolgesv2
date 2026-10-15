@@ -32,7 +32,7 @@ contextBridge.exposeInMainWorld('api', {
     reset: () => invoke('settings:reset'),
     openFolder: (which) => invoke('settings:openFolder', which)
   },
-  credentials: () => invoke('credentials:get'),
+  credentials: (revelar) => invoke('credentials:get', Boolean(revelar)),
 
   /* IA */
   ai: {

@@ -34,7 +34,7 @@ Tambien puedes instalarlo con doble clic en el archivo `.deb` (Software Center /
 
 Tras la instalacion:
 
-- La aplicacion aparece en el menu como **IASolges.v2** y genera su icono en el escritorio y en la barra de tareas.
+- La aplicacion aparece en el menu como **IASolges.v2**, genera su icono en el escritorio y **se abre maximizada**.
 - Datos del usuario: `~/.config/IASolges.v2` (ajustes) y `~/.local/share/IASolges.v2` (clientes, presupuestos, proyectos, analisis).
 - Proyectos generados: `~/.local/share/IASolges.v2/proyectos`.
 
@@ -115,6 +115,17 @@ Desarrollo con recarga en caliente:
 ```bash
 npm run dev
 ```
+
+Publicar una **nueva release en GitHub** (version, commit, tag, push y subida del `.deb`) se hace con un solo comando:
+
+```bash
+npm run release -- "Descripcion del cambio" --bump patch   # 2.0.1 -> patch
+npm run release -- "Descripcion" --bump minor               # 2.0.1 -> minor
+```
+
+El token se lee de `resources/credentials.json` (nunca versionado) o de la variable `GITHUB_TOKEN`.
+**Regla del proyecto: cualquier cambio funcional se publica siempre como una nueva release**, de modo que la
+autoactualizacion de la aplicacion detecte la version nueva.
 
 El paquete `.deb` se ensambla en `dist-pkg/iasolges-v2-<version>-amd64.deb` e incluye:
 

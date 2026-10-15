@@ -26,7 +26,8 @@ ensureDirs();
 function loadCredentials() {
   const local = path.join(dataDir, 'credentials.json');
   const packaged = path.join(process.resourcesPath || '', 'credentials.json');
-  const candidates = [local, packaged];
+  const proyecto = path.join(__dirname, '..', 'resources', 'credentials.json');
+  const candidates = [local, packaged, proyecto];
   for (const c of candidates) {
     try {
       if (c && fs.existsSync(c)) {

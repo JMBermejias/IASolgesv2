@@ -20,7 +20,7 @@ export const api = {
     reset: () => unwrap(window.api.settings.reset()),
     openFolder: (w) => unwrap(window.api.settings.openFolder(w))
   },
-  credentials: () => unwrap(window.api.credentials()),
+  credentials: (revelar) => unwrap(window.api.credentials(revelar)),
 
   ai: {
     catalog: () => unwrap(window.api.ai.catalog()),
