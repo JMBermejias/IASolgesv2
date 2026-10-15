@@ -118,7 +118,8 @@ function uploadAsset(releaseId, filePath, token) {
     process.exit(1);
   }
 
-  const version = bumpVersion(bump);
+  // Con --skip-build se respeta la version ya fijada en package.json
+  const version = skipBuild ? pkg.version : bumpVersion(bump);
   const tag = `v${version}`;
   console.log(`\n▶ Nueva version: ${version} (${tag})`);
 
@@ -140,8 +141,10 @@ function uploadAsset(releaseId, filePath, token) {
   sh(`git tag -f ${tag} -m "${mensaje.replace(/"/g, "'")}" || true`);
 
   if (!sinPush) {
-    sh('git push origin main');
-    sh(`git push origin ${tag} --force`);
+    // Autenticacion con el token del titular (sin guardarlo en el remoto)
+    const auth = `http.extraheader=Authorization: Basic ${Buffer.from(`x-access-token:${token}`).toString('base64')}`;
+    sh(`git -c ${auth} push origin main`);
+    sh(`git -c ${auth} push origin ${tag} --force`);
   }
 
   // Release
