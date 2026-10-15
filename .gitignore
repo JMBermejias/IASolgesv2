@@ -1,0 +1,16 @@
+# Dependencias y compilacion
+node_modules/
+dist/
+dist-pkg/
+.vite/
+
+# Credenciales privadas (NUNCA publicar)
+resources/credentials.json
+*.token
+.env
+.env.*
+
+# Sistema
+.DS_Store
+Thumbs.db
+*.log

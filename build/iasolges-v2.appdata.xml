@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<component type="desktop-application">
+  <id>com.jmbernabeu.iasolges.v2</id>
+  <metadata_license>CC0-1.0</metadata_license>
+  <project_license>MIT</project_license>
+  <name>IASolges.v2</name>
+  <summary>Agente inteligente para localizar clientes, presupuestar, crear software con IA y auditar legalmente</summary>
+  <description>
+    <p>
+      IASolges.v2 es una aplicacion de escritorio para Zorin OS y Linux que integra inteligencia
+      artificial en todas sus funciones:
+    </p>
+    <ul>
+      <li>Localizacion de clientes en mapa con OpenStreetMap y analisis de probabilidad de contratacion por medios.</li>
+      <li>Creacion automatica de presupuestos comerciales con IVA e IRPF.</li>
+      <li>La Fabrica: creacion de agentes, webs y aplicaciones completas con IA integrada, visible en un terminal en vivo.</li>
+      <li>Analisis legal y de cumplimiento (RGPD, LSSI-CE, LOPDGDD, RD 1112/2018) con problema y solucion de cada hallazgo.</li>
+      <li>Terminal con acceso directo al proveedor de IA (OpenCode y otros proveedores).</li>
+      <li>Actualizacion automatica desde GitHub y publicacion de proyectos en repositorios.</li>
+    </ul>
+  </description>
+  <launchable type="desktop-id">iasolges-v2.desktop</launchable>
+  <url type="homepage">https://github.com/JMBermejias/IASolgesv2</url>
+  <url type="bugtracker">https://github.com/JMBermejias/IASolgesv2/issues</url>
+  <developer_name>Jose Manuel Bernabeu Mejias</developer_name>
+  <provides>
+    <binary>iasolges-v2</binary>
+  </provides>
+  <content_rating type="oars-1.1"/>
+  <releases>
+    <release version="2.0.0" date="2026-10-15">
+      <description>
+        <p>Version inicial de IASolges.v2: localizacion de clientes, presupuestos con IA, La Fabrica, analisis legal, terminal IA, temas multiples y autoactualizacion desde GitHub.</p>
+      </description>
+    </release>
+  </releases>
+</component>

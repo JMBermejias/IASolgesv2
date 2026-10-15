@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE policyconfig PUBLIC
+ "-//freedesktop//DTD PolicyKit Policy Configuration 1.0//EN"
+ "http://www.freedesktop.org/standards/PolicyKit/1/policyconfig.dtd">
+<policyconfig>
+  <vendor>IASolges.v2</vendor>
+  <vendor_url>https://github.com/JMBermejias/IASolgesv2</vendor_url>
+
+  <action id="com.jmbernabeu.iasolges.v2.update">
+    <description>Instalar actualizaciones de IASolges.v2</description>
+    <description xml:lang="es">Instalar actualizaciones de IASolges.v2</description>
+    <message>IASolges.v2 solicita instalar una nueva version (paquete .deb oficial descargado de GitHub).</message>
+    <message xml:lang="es">IASolges.v2 solicita instalar una nueva version (paquete .deb oficial descargado de GitHub).</message>
+    <defaults>
+      <allow_any>auth_admin</allow_any>
+      <allow_inactive>auth_admin</allow_inactive>
+      <allow_active>auth_admin_keep</allow_active>
+    </defaults>
+    <annotate key="org.freedesktop.policykit.exec.path">/usr/bin/dpkg</annotate>
+    <annotate key="org.freedesktop.policykit.exec.allow_gui">true</annotate>
+  </action>
+</policyconfig>
