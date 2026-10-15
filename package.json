@@ -1,0 +1,102 @@
+{
+  "name": "iasolges-v2",
+  "productName": "IASolges.v2",
+  "version": "2.0.0",
+  "description": "IASolges.v2 - Agente inteligente de creacion de software, localizacion de clientes, presupuestos, fabrica de aplicaciones y analisis legal con IA",
+  "author": {
+    "name": "Jose Manuel Bernabeu Mejias",
+    "email": "jose.bernabeu.iasolges@gmail.com"
+  },
+  "license": "MIT",
+  "main": "electron/main.js",
+  "scripts": {
+    "dev": "concurrently -k \"vite\" \"wait-on tcp:5183 && IASOLGES_DEV=1 electron . --no-sandbox\"",
+    "dev:renderer": "vite",
+    "build": "vite build",
+    "start": "electron . --no-sandbox",
+    "smoke": "IASOLGES_SMOKE=1 electron . --no-sandbox",
+    "icons": "python3 scripts/make-icons.py",
+    "unpack": "electron-builder --linux dir --x64",
+    "deb": "node scripts/build-deb.js",
+    "package": "npm run build && npm run unpack && npm run deb",
+    "release": "node scripts/release.js"
+  },
+  "dependencies": {},
+  "devDependencies": {
+    "@vitejs/plugin-react": "^4.3.4",
+    "@xterm/addon-fit": "^0.10.0",
+    "@xterm/xterm": "^5.5.0",
+    "concurrently": "^9.1.0",
+    "electron": "^33.2.0",
+    "electron-builder": "^25.1.8",
+    "leaflet": "^1.9.4",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "react-leaflet": "^4.2.1",
+    "vite": "^6.0.3",
+    "wait-on": "^8.0.1"
+  },
+  "build": {
+    "appId": "com.jmbernabeu.iasolges.v2",
+    "productName": "IASolges.v2",
+    "executableName": "iasolges-v2",
+    "artifactName": "iasolges-v2-${version}-${arch}.${ext}",
+    "asar": true,
+    "directories": {
+      "output": "dist-pkg",
+      "buildResources": "build"
+    },
+    "files": [
+      "dist/**/*",
+      "electron/**/*",
+      "package.json",
+      "!**/*.map"
+    ],
+    "extraResources": [
+      {
+        "from": "resources/credentials.json",
+        "to": "credentials.json"
+      }
+    ],
+    "linux": {
+      "target": [
+        "dir"
+      ],
+      "category": "Development",
+      "icon": "build/icons",
+      "maintainer": "Jose Manuel Bernabeu Mejias",
+      "vendor": "IASolges.v2",
+      "synopsis": "Agente inteligente de software con IA",
+      "description": "IASolges.v2 localiza clientes en el mapa, genera presupuestos con IA, crea agentes, webs y aplicaciones (La Fabrica), realiza analisis legales de cumplimiento y ofrece una terminal con acceso directo al proveedor de IA (OpenCode y otros)."
+    },
+    "deb": {
+      "depends": [
+        "libgtk-3-0 (>= 3.22)",
+        "libnotify4",
+        "libnss3",
+        "libxss1",
+        "libxtst6",
+        "libgbm1",
+        "libasound2t64 | libasound2",
+        "libatk1.0-0",
+        "libatk-bridge2.0-0",
+        "libatspi2.0-0",
+        "libcups2",
+        "libdrm2",
+        "libxcomposite1",
+        "libxdamage1",
+        "libxfixes3",
+        "libxrandr2",
+        "libxkbcommon0",
+        "libpango-1.0-0",
+        "libcairo2",
+        "xdg-utils",
+        "policykit-1"
+      ],
+      "priority": "optional",
+      "recommends": [
+        "fonts-liberation"
+      ]
+    }
+  }
+}

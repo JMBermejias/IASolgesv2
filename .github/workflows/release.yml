@@ -1,0 +1,63 @@
+name: Compilar y publicar IASolges.v2
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    name: Construir instalador .deb
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Copiar el codigo
+        uses: actions/checkout@v4
+
+      - name: Instalar Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Instalar dependencias
+        run: npm install --no-audit --no-fund
+
+      - name: Compilar la interfaz
+        run: npm run build
+
+      - name: Generar iconos
+        run: python3 scripts/make-icons.py
+
+      - name: Empaquetar aplicacion
+        run: npx electron-builder --linux dir --x64
+
+      - name: Construir el instalador .deb
+        run: node scripts/build-deb.js
+
+      - name: Publicar como artefacto
+        uses: actions/upload-artifact@v4
+        with:
+          name: iasolges-v2-deb
+          path: dist-pkg/*.deb
+
+      - name: Crear release en GitHub
+        if: startsWith(github.ref, 'refs/tags/v')
+        uses: softprops/action-gh-release@v2
+        with:
+          files: dist-pkg/*.deb
+          generate_release_notes: true
+          body: |
+            ## IASolges.v2 ${{ github.ref_name }}
+
+            Instalador para Zorin OS / Ubuntu 24.04 y derivados:
+
+            ```bash
+            sudo apt install ./iasolges-v2-${{ github.ref_name }}-amd64.deb
+            ```
+
+            La aplicacion comprueba automaticamente las releases de este repositorio
+            y ofrece la actualizacion con un boton dentro de la propia aplicacion.

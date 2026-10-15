@@ -1,0 +1,24 @@
+[Desktop Entry]
+Type=Application
+Version=1.0
+Name=IASolges.v2
+GenericName=Agente inteligente de software
+Comment=Localiza clientes, presupuesta, crea aplicaciones con IA y audita legalmente tus proyectos
+Comment[es]=Localiza clientes en el mapa, genera presupuestos con IA, crea agentes, webs y aplicaciones y analiza el cumplimiento legal de todo lo que entregas
+Exec=iasolges-v2 %U
+Icon=iasolges-v2
+Terminal=false
+StartupNotify=true
+StartupWMClass=IASolges.v2
+Categories=Development;Utility;Office;
+Keywords=IA;inteligencia artificial;software;desarrollo;clientes;presupuestos;legal;automatizacion;
+MimeType=text/html;application/json;
+Actions=TerminalIA;Credenciales;
+
+[Desktop Action TerminalIA]
+Name=Terminal con IA
+Exec=iasolges-v2 --vista=terminal
+
+[Desktop Action Credenciales]
+Name=Credenciales del titular
+Exec=iasolges-v2 --vista=credenciales
