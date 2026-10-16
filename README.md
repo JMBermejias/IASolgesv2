@@ -188,4 +188,4 @@ IASolges.v2/
 ## Licencia
 
 **MIT** · Copyright (c) 2026 **Jose Manuel Bernabeu Mejias**, Calle Medico Rafael Navarro 2, 2ºC,
-03660 Novelda, Alicante, España. Consulta el fichero [LICENSE](LICENSE).
+03660 Novelda, Alicante, España. Consulta [LICENSE](LICENSE) (texto oficial de la licencia MIT) y [AUTHOR](AUTHOR).
