@@ -2,6 +2,16 @@
 
 Todas las novedades de IASolges.v2.
 
+## [2.0.11] - 2026-10-16
+
+### Corregido
+- El botón **"Enviar prueba"** de Configuración mostraba siempre "sin respuesta". La causa: la prueba
+  se cerraba a los 800 ms de iniciarla, antes de que el modelo contestara (OpenCode responde por
+  streaming y tarda unos segundos). Ahora la prueba **espera a que llegue la respuesta real**, avisa
+  con "esperando respuesta…" mientras llega y muestra el resultado con un distintivo verde
+  "respuesta recibida" o rojo "sin respuesta". La respuesta se conserva en pantalla para poder
+  leerla, y hay un margen de seguridad de 90 segundos por si el proveedor no cierra la conexión.
+
 ## [2.0.10] - 2026-10-16
 
 ### Anadido

@@ -24,7 +24,7 @@ export default function Configuracion({ settings, info, update, setUpdate, navig
   const [buscando, setBuscando] = useState(false);
   const [guardando, setGuardando] = useState(false);
   const [testing, setTesting] = useState(null);
-  const [out, setOut] = useState('');
+  const [pruebas, setPruebas] = useState({});   // { [proveedor]: { texto, ok, error,finished } }
   const [versions, setVersions] = useState(null);
 
   const cargar = async () => {
@@ -64,22 +64,48 @@ export default function Configuracion({ settings, info, update, setUpdate, navig
   };
 
   const probar = async (pid, model) => {
-    setTesting(pid); setOut('');
-    const off = api.ai.onEvent((evt) => {
-      if (evt.type === 'token') setOut((o) => (o + evt.text).slice(-3000));
-      if (evt.type === 'error') setOut((o) => `${o}\n[ERROR] ${evt.message}`);
-      if (evt.type === 'end') setTesting(null);
+    if (testing) return;
+    setTesting(pid);
+    setPruebas((p) => ({ ...p, [pid]: { texto: '', ok: null, error: null, terminado: false } }));
+
+    let off = null;
+    // La respuesta llega por streaming: hay que esperar al evento 'end'
+    const respuesta = new Promise((resolve) => {
+      off = api.ai.onEvent((evt) => {
+        const texto = evt.type === 'token' ? evt.text
+          : evt.type === 'status' ? `\n${evt.message}\n`
+            : evt.type === 'error' ? `\n[ERROR] ${evt.message}\n`
+              : '';
+        if (texto) setPruebas((p) => ({ ...p, [pid]: { ...(p[pid] || {}), texto: `${(p[pid]?.texto || '')}${texto}`.slice(-3000) } }));
+        if (evt.type === 'error') setPruebas((p) => ({ ...p, [pid]: { ...(p[pid] || {}), error: evt.message } }));
+        if (evt.type === 'end') {
+          setPruebas((p) => ({ ...p, [pid]: { ...(p[pid] || {}), ok: (p[pid]?.texto || '').trim().length > 0, terminado: true } }));
+          setTesting(null);
+          resolve(evt);
+        }
+      });
     });
+
     try {
       await api.ai.run({
         runId: `test_${pid}_${Date.now()}`,
-        prompt: 'Responde exactamente: OK. No añadas nada mas.',
+        prompt: 'Responde exactamente con la palabra OK y nada más.',
         provider: pid, model, cwd: settings?.factory?.rootFolder
       });
+      // Margen de seguridad por si el proveedor no emite el evento de fin
+      await Promise.race([respuesta, new Promise((r) => setTimeout(r, 90000))]);
+      setPruebas((p) => {
+        const actual = p[pid] || {};
+        return { ...p, [pid]: { ...actual, terminado: true, ok: actual.ok === null ? Boolean((actual.texto || '').trim()) : actual.ok } };
+      });
+      setTesting(null);
       const s = await api.ai.status();
       setStatus(s);
+    } catch (e) {
+      setPruebas((p) => ({ ...p, [pid]: { ...(p[pid] || {}), error: e.message, terminado: true, ok: false } }));
+      setTesting(null);
     } finally {
-      setTimeout(() => off?.(), 800);
+      off?.();
     }
   };
 
@@ -91,8 +117,6 @@ export default function Configuracion({ settings, info, update, setUpdate, navig
       if (!u.available) setTab('actualizaciones');
     } catch (e) { push(e.message, 'error'); }
   };
-
-  const salida = useMemo(() => out || '(sin respuesta)', [out]);
 
   return (
     <div className="stack">
@@ -210,8 +234,23 @@ export default function Configuracion({ settings, info, update, setUpdate, navig
                     </button>
                   </Field>
                 </div>
-                {testing === p.id && (
-                  <pre className="code" style={{ marginTop: 10 }}>{salida}</pre>
+                {(testing === p.id || pruebas[p.id]?.texto) && (
+                  <div style={{ marginTop: 10 }}>
+                    <div className="row row-tight" style={{ marginBottom: 6 }}>
+                      {testing === p.id ? (
+                        <span className="chip warning"><span className="spinner" />esperando respuesta…</span>
+                      ) : pruebas[p.id]?.ok ? (
+                        <span className="chip success">respuesta recibida</span>
+                      ) : (
+                        <span className="chip danger">sin respuesta</span>
+                      )}
+                    </div>
+                    <pre className="code" style={{ maxHeight: 200 }}>
+                      {pruebas[p.id]?.texto?.trim() || (pruebas[p.id]?.error
+                        ? `Error: ${pruebas[p.id].error}`
+                        : 'El proveedor no ha devuelto ningún texto. Revisa la clave de API, el modelo elegido y los permisos.')}
+                    </pre>
+                  </div>
                 )}
               </Card>
             );
