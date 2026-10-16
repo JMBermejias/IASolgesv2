@@ -24,6 +24,9 @@ const SERVICIOS = [
   { id: 'imagenes', label: 'Imágenes e ilustraciones con IA', precioHora: 45, horasEstimadas: 25, icono: '🖼️' },
   { id: 'render', label: 'Render 3D y modelado', precioHora: 55, horasEstimadas: 40, icono: '🧊' },
   { id: 'video', label: 'Vídeo y animación', precioHora: 50, horasEstimadas: 45, icono: '🎬' },
+  { id: 'bot-wa', label: 'Bot y app para WhatsApp', precioHora: 55, horasEstimadas: 50, icono: '💬' },
+  { id: 'bot-tg', label: 'Bot y app para Telegram', precioHora: 50, horasEstimadas: 40, icono: '✈️' },
+  { id: 'bot-fb', label: 'Bot para Facebook e Instagram', precioHora: 50, horasEstimadas: 40, icono: '📘' },
   { id: 'pack', label: 'Paquete completo IA + Web + App', precioHora: 60, horasEstimadas: 220, icono: '🚀' }
 ];
 

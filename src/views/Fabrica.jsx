@@ -106,7 +106,7 @@ export default function Fabrica({ id, settings, navigate }) {
     <div className="stack">
       <BackHome extra={<span className="chip primary">{proyectos.length} proyectos</span>} />
 
-      <Card icon="🏭" title="La Fábrica" subtitle="Crea agentes, webs, aplicaciones y cualquier proyecto que el cliente necesite. Siempre con inteligencia artificial integrada.">
+      <Card icon="🏭" title="La Fábrica" subtitle="Crea agentes, webs, aplicaciones, imágenes, renders, vídeos y bots para WhatsApp, Telegram o Facebook. Siempre con IA integrada.">
         <div className="grid grid-3">
           <div>
             <Field label="Nombre del proyecto" required>

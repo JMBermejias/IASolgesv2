@@ -24,7 +24,10 @@ const TIPOS = [
   { id: 'imagen', label: 'Imágenes e ilustraciones', icono: '🖼️' },
   { id: 'render', label: 'Render 3D', icono: '🧊' },
   { id: 'video', label: 'Vídeo y animación', icono: '🎬' },
-  { id: 'audio', label: 'Audio y música', icono: '🎧' }
+  { id: 'audio', label: 'Audio y música', icono: '🎧' },
+  { id: 'whatsapp', label: 'App para WhatsApp', icono: '💬' },
+  { id: 'telegram', label: 'App para Telegram', icono: '✈️' },
+  { id: 'facebook', label: 'App para Facebook', icono: '📘' }
 ];
 
 /** Instrucciones específicas de cada tipo de producto para el agente de IA */
@@ -67,7 +70,59 @@ VÍDEO Y ANIMACIÓN:
 AUDIO Y MÚSICA:
 - Crea un estudio de audio con IA integrado y funcional.
 - Texto a voz con el proveedor configurado, limpieza de ruido, normalización y mezcla de pistas.
-- Generación de música y efectos con IA y exportación a WAV/MP3/OGG y a formatos para vídeo.`
+- Generación de música y efectos con IA y exportación a WAV/MP3/OGG y a formatos para vídeo.`,
+  whatsapp: `
+APP PARA WHATSAPP:
+- Construye un bot y una mini aplicación para WhatsApp con IA integrada, lista para producción.
+- Backend de bot con Webhook compatible con la API de WhatsApp Business Cloud (Meta) y, como
+  alternativa sin cuenta de empresa, enlaces wa.me, botones de respuesta rápida y mensajes
+  interactivos. El código debe funcionar en modo SIMULADO si no hay token.
+- Módulos a implementar:
+  1. Núcleo del bot: enrutado de mensajes, estados por conversación y memoria persistente.
+  2. Módulo IA: respuestas con contexto, resumen automático de conversaciones, traducción y
+     generación de respuestas a partir del catálogo del negocio (usa el módulo \`ai\` multi-proveedor).
+  3. Envío multimedia: imágenes, documentos, audio y notas de voz con enlaces firmados.
+  4. Catálogo de productos y pedido: lista, carrito, confirmación y pedido guardado.
+  5. Citas y recordatorios con agenda sencilla.
+  6. Panel web de control: conversaciones, contactos, etiquetas, respuestas rápidas yestadísticas.
+  7. Sistema de plantillas de mensajes reutilizables.
+- Requisitos: verificación de firma del webhook, límite de peticiones, cola de mensajes,
+  registro de cambios de webhook, reintentos y despliegue documentado con ngrok o similar para pruebas.
+- Incluye el flujo de opting-in y el texto legal del tratamiento de datos (RGPD).`,
+  telegram: `
+APP PARA TELEGRAM:
+- Construye un bot de Telegram completo con IA integrada y panel de administración web.
+- Backend con la Telegram Bot API (long polling para desarrollo y webhook para producción) y modo
+  simulado si no hay token.
+- Módulos a implementar:
+  1. Núcleo del bot: comandos (/start, /ayuda y comandos propios), teclado en línea, botones
+     inline y replies, y enrutado por conversación.
+  2. Módulo IA integrado: respuestas con contexto, historial, resumen, traducción y respuestas a
+     partir de la documentación del negocio (usa el módulo \`ai\` multi-proveedor).
+  3. Suscripciones y avisos: canales por regla, notificaciones y campañas programadas.
+  4. Multimedia: envío de fotos, vídeos, documentos y audio con transcripción por IA.
+  5. Formularios conversacionales paso a paso (por ejemplo, pedir un presupuesto o cita).
+  6. Panel web: conversaciones, usuarios, estadísticas, comandos rápidos y gestión del bot.
+  7. Publicación automatica de contenido con IA a partir de una fuente o de una hoja de cálculo.
+- Requisitos: validación del webhook con secret token, manejo de limitrate de Telegram, cola de
+  mensajes, persistencia (SQLite o PostgreSQL) y despliegue documentado con HTTPS.`,
+  facebook: `
+APP PARA FACEBOOK:
+- Construye un bot para Facebook Messenger e Instagram con IA integrada y panel de control.
+- Backend con la Graph API de Meta (Messenger Platform e Instagram Messaging),con modo webhook y
+  verificación del token GET inicial, más modo simulado si no hay credenciales.
+- Módulos a implementar:
+  1. Núcleo del bot: recepción de mensajes, tipos (texto, imagen, audio, botones, quick replies,
+     plantillas genéricas) y control de ventanas de 24 horas de Messenger.
+  2. Módulo IA integrado: respuestas con contexto, resumen, traducción y recomendaciones a partir
+     del catálogo del negocio (usa el módulo \`ai\` multi-proveedor).
+  3. Envío de mensajes: texto, medios, botones, tarjetas de producto, plantillas y confirmaciones.
+  4. Botón "Enviarme actualizaciones" y calendario de envíos recurrentes.
+  5. Captación de clientes: formularios, etiquetas y paso a la agenda o presupuesto.
+  6. Panel web: conversaciones, contactos, etiquetas, plantillas,Publication y estadísticas.
+  7. Integración con la página de Facebook y con Instagram por Messenger.
+- Requisitos: verificación del webhook, control de la Permission "pages_messaging", límites de
+  la API, cola de mensajes y despliegue documentado con HTTPS y dominio verificado.`
 };
 
 function slugify(text) {

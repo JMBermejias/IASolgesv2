@@ -31,6 +31,7 @@ export const api = {
     complete: (o) => unwrap(window.api.ai.complete(o)),
     run: (o) => unwrap(window.api.ai.run(o)),
     cancel: (id) => unwrap(window.api.ai.cancel(id)),
+    askJson: (opts) => unwrap(window.api.ai.askJson(opts)),
     onEvent: (fn) => window.api.ai.onEvent(fn)
   },
 

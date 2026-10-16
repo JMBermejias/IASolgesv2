@@ -17,6 +17,7 @@ export default function Localizacion({ settings, navigate, id }) {
   const [filtro, setFiltro] = useState('');
   const [detalle, setDetalle] = useState(null);
   const [analisis, setAnalisis] = useState(null);
+  const [verAnalisis, setVerAnalisis] = useState(false);
   const [analizando, setAnalizando] = useState(false);
   const [objetivo, setObjetivo] = useState('');
   const [guardados, setGuardados] = useState([]);
@@ -83,15 +84,17 @@ export default function Localizacion({ settings, navigate, id }) {
     setAnalizando(true);
     try {
       const prompt = await api.customers.analysisPrompt({ resultado, objetivo, servicio: form.category });
-      const res = await api.ai.complete({
+      const res = await api.ai.askJson({
         prompt,
         system: 'Eres un consultor comercial experto en venta de servicios digitales en Espana. Respondes solo con JSON valido.',
         provider: settings?.provider,
         model: settings?.models?.[settings?.provider]
       });
-      const json = parseJSON(res.text);
+      const json = res.data || parseJSON(res.text);
       setAnalisis(json || { resumen: res.text });
+      setVerAnalisis(true);
       if (!json) push('El modelo no devolvio un JSON valido: se muestra su respuesta en texto.', 'warning');
+      else if (res.repaired) push('El analisis se ha reconstruido automaticamente a JSON valido.', 'info');
     } catch (e) {
       push(e.message, 'error', 7000);
     } finally {
@@ -105,7 +108,58 @@ export default function Localizacion({ settings, navigate, id }) {
     navigate('presupuestos');
   };
 
-  return (
+  /** Contenido del análisis comercial (se usa en la tarjeta y en la ventana emergente) */
+  const contenidoAnalisis = () => (analisis ? (
+    <>
+                {analisis.resumen && <p className="soft">{analisis.resumen}</p>}
+                <div className="grid grid-2">
+                  {(analisis.segmentos || []).map((s, i) => (
+                    <div key={i} className="card card-body" style={{ boxShadow: 'none' }}>
+                      <b>{s.segmento}</b>
+                      <div className="small soft">{s.estrategia}</div>
+                      <div className="row row-tight" style={{ marginTop: 6 }}>
+                        {(s.clientes || []).slice(0, 6).map((n) => <span key={n} className="chip static">{n}</span>)}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+                {(analisis.priorizados || []).length > 0 && (
+                  <>
+                    <div className="divider" />
+                    <h3>Clientes prioritarios</h3>
+                    {analisis.priorizados.map((p, i) => (
+                      <div key={i} className="link-row">
+                        <div className="ico">🔥</div>
+                        <div style={{ flex: 1 }}>
+                          <div className="name">{p.nombre}</div>
+                          <div className="meta">{p.motivo} → {p.accion}</div>
+                        </div>
+                        <span className="chip primary">{p.probabilidad}%</span>
+                      </div>
+                    ))}
+                  </>
+                )}
+                {(analisis.ofertas || []).length > 0 && (
+                  <>
+                    <div className="divider" />
+                    <div className="grid grid-2">
+                      {analisis.ofertas.map((o, i) => (
+                        <div key={i} className="alert info">
+                          <div>
+                            <b>{o.nombre}</b> — {eur(o.precioOrientativo)}
+                            <div className="tiny">{(o.incluye || []).join(' · ')}</div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </>
+                )}
+
+    </>
+  ) : null);
+
+
+          return (
     <div className="stack">
       <BackHome extra={
         <>
@@ -173,6 +227,13 @@ export default function Localizacion({ settings, navigate, id }) {
 
       {(resultado || areaAbierta) && (
         <>
+      {analisis && (
+        <Card id="panel-analisis" icon="🤖" title="Análisis comercial con IA" subtitle="Segmentación, priorización y estrategia de venta"
+          actions={<button className="btn sm soft" onClick={() => setVerAnalisis(true)}>Ampliar análisis</button>}>
+          <div style={{ maxHeight: 260, overflowY: 'auto' }}>{contenidoAnalisis()}</div>
+        </Card>
+      )}
+
           <div className="split" style={{ gridTemplateColumns: '1fr 430px' }}>
             <Card bodyClass="tight" title={resultado ? `Mapa · ${resultado.clientes.length} resultados` : 'Mapa de clientes'} icon="🗺️"
               subtitle={
@@ -192,6 +253,9 @@ export default function Localizacion({ settings, navigate, id }) {
                   <button className="btn sm" onClick={analizarIA} disabled={analizando || !resultado}>
                     {analizando ? <span className="spinner" /> : '🤖'} Análisis IA
                   </button>
+                  {analisis && (
+                    <button className="btn sm soft" onClick={() => setVerAnalisis(true)}>👁 Ver análisis</button>
+                  )}
                   <button className="btn sm" onClick={guardar} disabled={!resultado}>💾 Guardar ({sel.length})</button>
                   <button className="btn primary sm" onClick={irAPresupuesto} disabled={!resultado}>📄 Presupuestar</button>
                 </>
@@ -284,55 +348,8 @@ export default function Localizacion({ settings, navigate, id }) {
             </Card>
           </div>
 
-          {analisis && (
-            <Card icon="🤖" title="Análisis comercial con IA" subtitle="Segmentacion, priorizacion y estrategia de venta">
-              {analisis.resumen && <p className="soft">{analisis.resumen}</p>}
-              <div className="grid grid-2">
-                {(analisis.segmentos || []).map((s, i) => (
-                  <div key={i} className="card card-body" style={{ boxShadow: 'none' }}>
-                    <b>{s.segmento}</b>
-                    <div className="small soft">{s.estrategia}</div>
-                    <div className="row row-tight" style={{ marginTop: 6 }}>
-                      {(s.clientes || []).slice(0, 6).map((n) => <span key={n} className="chip static">{n}</span>)}
-                    </div>
-                  </div>
-                ))}
-              </div>
-              {(analisis.priorizados || []).length > 0 && (
-                <>
-                  <div className="divider" />
-                  <h3>Clientes prioritarios</h3>
-                  {analisis.priorizados.map((p, i) => (
-                    <div key={i} className="link-row">
-                      <div className="ico">🔥</div>
-                      <div style={{ flex: 1 }}>
-                        <div className="name">{p.nombre}</div>
-                        <div className="meta">{p.motivo} → {p.accion}</div>
-                      </div>
-                      <span className="chip primary">{p.probabilidad}%</span>
-                    </div>
-                  ))}
-                </>
-              )}
-              {(analisis.ofertas || []).length > 0 && (
-                <>
-                  <div className="divider" />
-                  <div className="grid grid-2">
-                    {analisis.ofertas.map((o, i) => (
-                      <div key={i} className="alert info">
-                        <div>
-                          <b>{o.nombre}</b> — {eur(o.precioOrientativo)}
-                          <div className="tiny">{(o.incluye || []).join(' · ')}</div>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </>
-              )}
-            </Card>
-          )}
 
-          <Card icon="🗃️" title={`Clientes guardados (${guardados.length})`} subtitle="Base comercial disponible para presupuestos">
+  <Card icon="🗃️" title={`Clientes guardados (${guardados.length})`} subtitle="Base comercial disponible para presupuestos">
             {guardados.length === 0 ? (
               <Empty icon="💾" title="Ningun cliente guardado" text="Selecciona resultados y pulsa Guardar." />
             ) : (
@@ -374,6 +391,17 @@ export default function Localizacion({ settings, navigate, id }) {
             action={<button className="btn primary" onClick={buscar}>🔍 Empezar la búsqueda</button>} />
         </Card>
       )}
+
+
+      <Modal open={verAnalisis} wide title="Análisis comercial con IA" onClose={() => setVerAnalisis(false)}
+        footer={<>
+          <button className="btn" onClick={() => { setVerAnalisis(false); document.getElementById('panel-analisis')?.scrollIntoView({ behavior: 'smooth', block: 'start' }); }}>
+            Ver en la página
+          </button>
+          <button className="btn primary" onClick={() => setVerAnalisis(false)}>Cerrar</button>
+        </>}>
+        {contenidoAnalisis()}
+      </Modal>
 
       <Modal open={Boolean(detalle)} title={`Análisis · ${detalle?.nombre || ''}`} onClose={() => setDetalle(null)} wide
         footer={<>

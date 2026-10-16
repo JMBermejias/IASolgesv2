@@ -44,6 +44,7 @@ contextBridge.exposeInMainWorld('api', {
     complete: (opts) => invoke('ai:complete', opts),
     run: (opts) => invoke('ai:run', opts),
     cancel: (id) => invoke('ai:cancel', id),
+    askJson: (opts) => invoke('ai:askJson', opts),
     onEvent: (fn) => subscribe('ai:event', fn)
   },
 

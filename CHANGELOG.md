@@ -2,6 +2,25 @@
 
 Todas las novedades de IASolges.v2.
 
+## [2.0.10] - 2026-10-16
+
+### Anadido
+- **La Fábrica**: tres tipos de producto nuevos para mensajería: 💬 App para WhatsApp,
+  ✈️ App para Telegram y 📘 App para Facebook (Messenger e Instagram). Cada uno con su bloque
+  técnico propio: API de WhatsApp Business Cloud con enlaces wa.me y multimedia, bot de Telegram
+  con comandos y formularios conversacionales, y bot de Facebook/Instagram con Graph API y control
+  de la ventana de 24 horas. Los tres incluyen panel web de control, módulo de IA multi-proveedor,
+  modo simulado sin credenciales y despliegue documentado.
+- Servicios presupuestables: Bot y app para WhatsApp, Bot y app para Telegram y Bot para Facebook e
+  Instagram.
+
+### Corregido
+- El **análisis comercial con IA** ya no queda escondido detrás del mapa: al terminar se abre en
+  una ventana emergente grande y además queda una tarjeta en la página, encima del mapa, con botón
+  para ampliarla. Antes solo aparecía debajo del mapa y era prácticamente invisible.
+- El análisis con IA se reconstruye automáticamente cuando el modelo no devuelve JSON válido, de
+  forma que siempre se obtienen segmentos, clientes prioritarios, argumentarios y ofertas.
+
 ## [2.0.9] - 2026-10-16
 
 ### Corregido

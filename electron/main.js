@@ -262,6 +262,12 @@ function registerIpc() {
     return true;
   });
   handle('ai:cancel', (id) => engine.cancel(id));
+  handle('ai:askJson', async (opts) => {
+    const { data, text, repaired } = await engine.askJson(opts.prompt, opts.system, {
+      provider: opts.provider, model: opts.model, agent: opts.agent
+    });
+    return { data, text, repaired };
+  });
 
   /* --- Terminal --- */
   handle('terminal:create', (opts) => terminal.create(opts || {}));
