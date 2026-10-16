@@ -2,6 +2,12 @@
 
 Todas las novedades de IASolges.v2.
 
+## [2.0.3] - 2026-10-16
+
+### Corregido
+- La licencia MIT del repositorio vuelve al texto oficial en ingles (con tu nombre y direccion) para que
+  GitHub la identifique correctamente como MIT, y se muestra asi tambien dentro de la aplicacion.
+
 ## [2.0.2] - 2026-10-16
 
 ### Anadido

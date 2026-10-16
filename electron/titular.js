@@ -22,23 +22,25 @@ const LICENCIA = {
 Copyright (c) ${new Date().getFullYear()} Jose Manuel Bernabeu Mejias
 ${TITULAR.direccion}
 
-Se concede permiso, libre de cargos, a cualquier persona que obtenga una copia
-de este software y de los archivos de documentacion asociados (el "Software"),
-a utilizar el Software sin restriccion, incluyendo sin limitacion los derechos
-a usar, copiar, modificar, fusionar, publicar, distribuir, sublicenciar y/o
-vender copias del Software, y a permitir a las personas a las que se les
-proporcione el Software a hacer lo mismo, sujeto a las siguientes condiciones:
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
 
-El aviso de copyright anterior y este aviso de permiso se incluiran en todas
-las copias o partes sustanciales del Software.
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
 
-EL SOFTWARE SE PROPORCIONA "COMO ESTA", SIN GARANTIA DE NINGUN TIPO, EXPRESA O
-IMPLICITA, INCLUYENDO PERO NO LIMITADO A GARANTIAS DE COMERCIALIZACION,
-IDONEIDAD PARA UN PROPOSITO PARTICULAR E INCUMPLIMIENTO. EN NINGUN CASO LOS
-AUTORES O TITULARES DEL COPYRIGHT SERAN RESPONSABLES DE NINGUNA RECLAMACION,
-DAÑOS U OTRAS RESPONSABILIDADES, YA SEA EN UNA ACCION DE CONTRATO, AGRAVIO O
-CUALQUIER OTRO MOTIVO, DERIVADAS DE, FUERA DE O EN CONEXION CON EL SOFTWARE O SU
-USO U OTRO TIPO DE ACCIONES.`
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+
+Titular: ${TITULAR.nombre} · ${TITULAR.direccion}`
 };
 
 module.exports = { TITULAR, LICENCIA };
