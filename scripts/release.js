@@ -78,6 +78,9 @@ function api(pathname, { method = 'GET', body, raw = false, token } = {}) {
   });
 }
 
+let GH_OWNER = '';
+let GH_REPO = '';
+
 function uploadAsset(releaseId, filePath, token) {
   return new Promise((resolve, reject) => {
     const name = path.basename(filePath);
@@ -85,7 +88,7 @@ function uploadAsset(releaseId, filePath, token) {
     const content = fs.readFileSync(filePath);
     const req = https.request({
       hostname: 'uploads.github.com',
-      path: `/repos/${owner}/${repo}/releases/${releaseId}/assets?name=${encodeURIComponent(name)}`,
+      path: `/repos/${GH_OWNER}/${GH_REPO}/releases/${releaseId}/assets?name=${encodeURIComponent(name)}`,
       method: 'POST',
       headers: {
         'User-Agent': 'IASolges.v2',
@@ -113,6 +116,8 @@ function uploadAsset(releaseId, filePath, token) {
   const token = creds.github?.token || process.env.GITHUB_TOKEN;
   const repoCfg = creds.github?.repo || 'JMBermejias/IASolgesv2';
   const [owner, repo] = repoCfg.split('/');
+  GH_OWNER = owner;
+  GH_REPO = repo;
   if (!token) {
     console.error('✖ Falta el token de GitHub (resources/credentials.json o GITHUB_TOKEN).');
     process.exit(1);
