@@ -255,13 +255,24 @@ function pickContact(tags = {}) {
   return { phone, website, email, socials, openingHours: tags.opening_hours || null };
 }
 
-function labelFromTags(tags = {}, type) {
+function labelFromTags(tags = {}, type, center = null) {
   const street = tags['addr:street'] || tags['contact:street'] || '';
   const number = tags['addr:housenumber'] || '';
   const city = tags['addr:city'] || tags['addr:town'] || tags['addr:village'] || '';
   const postcode = tags['addr:postcode'] || '';
   const composed = [street && `${street} ${number}`.trim(), postcode, city].filter(Boolean).join(', ');
-  return composed || (type ? type.replace(/_/g, ' ') : 'Sin dirección');
+  if (composed) return composed;
+
+  // Sin direccion en las etiquetas: se indica la localidad de la zona en lugar del
+  // nombre tecnico del elemento de OpenStreetMap (por ejemplo "node" o "way").
+  const zona = center?.label ? String(center.label).split(',').slice(0, 2).join(',').trim() : '';
+  const tipo = type && type !== 'node' && type !== 'way' && type !== 'relation'
+    ? type.replace(/_/g, ' ')
+    : '';
+  if (zona && tipo) return `${zona} (${tipo})`;
+  if (zona) return zona;
+  if (tipo) return `Sin calle registrada (${tipo})`;
+  return 'Sin dirección registrada';
 }
 
 /**
@@ -320,7 +331,7 @@ function analyseClient(poi, ctx) {
     id: `osm_${poi.osmType || 'node'}_${poi.id}`,
     nombre: poi.name || tags.name || tags.brand || 'Negocio sin nombre',
     categoria: tags.shop || tags.amenity || tags.craft || tags.office || tags.leisure || tags.industrial || 'comercio',
-    direccion: labelFromTags(tags, poi.type),
+    direccion: labelFromTags(tags, poi.type, center),
     lat: poi.lat,
     lon: poi.lon,
     distanciaKm: Number(dist.toFixed(2)),

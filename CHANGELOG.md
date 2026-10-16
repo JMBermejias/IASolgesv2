@@ -2,6 +2,16 @@
 
 Todas las novedades de IASolges.v2.
 
+## [2.0.12] - 2026-10-16
+
+### Corregido
+- El mapa de OpenStreetMap **tapaba las ventanas emergentes** de la aplicación (Análisis de cliente,
+  Análisis comercial con IA, detalle de presupuesto, detalle legal). Motivo: Leaflet dibuja sus
+  capas con z-index propios de 200 a 1000 y el modal solo usaba 100. Ahora el mapa queda aislado en su
+  propio contexto de apilamiento y las ventanas se muestran por encima de cualquier capa.
+- La ficha de un cliente ya no muestra "node" como dirección: cuando OpenStreetMap no trae calle ni
+  número, se indica la localidad de la zona (por ejemplo "Novelda, El Vinalopó Medio").
+
 ## [2.0.11] - 2026-10-16
 
 ### Corregido
