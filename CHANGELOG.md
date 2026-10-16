@@ -2,6 +2,14 @@
 
 Todas las novedades de IASolges.v2.
 
+## [2.0.2] - 2026-10-16
+
+### Anadido
+- La ventana se abre **maximizada** en todos los escritorios (se maximize despues de mostrarse,
+  que es cuando el gestor de ventanas aplica correctamente el estado).
+- `scripts/release.js`: publicacion completa de una release (version, commit, tag, push y `.deb`)
+  con autenticacion mediante el token del titular, sin guardarlo en el remoto.
+
 ## [2.0.1] - 2026-10-15
 
 ### Anadido

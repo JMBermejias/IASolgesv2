@@ -54,10 +54,6 @@ function createWindow() {
   });
 
   win.once('ready-to-show', () => {
-    // La aplicacion se abre siempre maximizada
-    if (process.env.IASOLGES_NO_MAXIMIZE !== '1') {
-      try { win.maximize(); } catch (_) { /* ignore */ }
-    }
     const vistaArg = process.argv.find((a) => a.startsWith('--vista='));
     if (vistaArg) {
       const vista = vistaArg.split('=')[1];
@@ -66,6 +62,12 @@ function createWindow() {
       });
     }
     win.show();
+    // La aplicacion se abre siempre maximizada
+    if (process.env.IASOLGES_NO_MAXIMIZE !== '1') {
+      setTimeout(() => {
+        try { win.maximize(); } catch (_) { /* ignore */ }
+      }, 60);
+    }
   });
 
   if (isDev) {
@@ -108,6 +110,10 @@ function createWindow() {
         await new Promise((r) => setTimeout(r, Number(process.env.IASOLGES_EVAL_WAIT || 9000)));
       }
       console.log('[smoke] ventana cargada, informacion:', JSON.stringify(app.getVersion()));
+      if (win && process.env.IASOLGES_DEBUG_BOUNDS) {
+        const wa = require('electron').screen.getPrimaryDisplay().workAreaSize;
+        console.log('[smoke] bounds ventana:', JSON.stringify(win.getBounds()), 'maximizada:', win.isMaximized(), 'pantalla:', JSON.stringify(wa));
+      }
       if (process.env.IASOLGES_SHOT && win) {
         try {
           const img = await win.webContents.capturePage();
