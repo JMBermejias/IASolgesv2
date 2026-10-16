@@ -2,6 +2,12 @@
 
 Todas las novedades de IASolges.v2.
 
+## [2.0.4] - 2026-10-16
+
+### Corregido
+- La cabecera de la licencia MIT queda exactamente con el formato que GitHub reconoce, con el nombre y
+  el domicilio del titular en el pie del fichero.
+
 ## [2.0.3] - 2026-10-16
 
 ### Corregido
