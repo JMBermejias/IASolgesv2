@@ -2,12 +2,12 @@ import React from 'react';
 
 const NAV = [
   { id: 'inicio', label: 'Inicio', icon: '🏠', group: 'Principal' },
-  { id: 'localización', label: 'Localización de clientes', icon: '📍', group: 'Comercial' },
+  { id: 'localizacion', label: 'Localización de clientes', icon: '📍', group: 'Comercial' },
   { id: 'presupuestos', label: 'Presupuestos', icon: '📄', group: 'Comercial' },
   { id: 'fabrica', label: 'La Fábrica', icon: '🏭', group: 'Producción' },
   { id: 'legal', label: 'Análisis legal', icon: '⚖️', group: 'Producción' },
   { id: 'terminal', label: 'Terminal IA', icon: '⬛', group: 'Herramientas' },
-  { id: 'configuración', label: 'Configuración', icon: '⚙️', group: 'Herramientas' },
+  { id: 'configuracion', label: 'Configuración', icon: '⚙️', group: 'Herramientas' },
   { id: 'credenciales', label: 'Credenciales', icon: '🔑', group: 'Herramientas' }
 ];
 

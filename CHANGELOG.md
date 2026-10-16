@@ -2,6 +2,19 @@
 
 Todas las novedades de IASolges.v2.
 
+## [2.0.8] - 2026-10-16
+
+### Corregido
+- El botón **"Buscar clientes"** del panel de inicio volvía al inicio en lugar de abrir
+  "Localización de clientes". La causa: los enlaces usaban la palabra acentuada
+  (`localización`), el navegador la codificaba en el hash (`#/localizaci%C3%B3n`) y el
+  enrutador no la reconocía. Ahora todas las rutas internas usan identificadores simples y el
+  enrutador acepta indistintamente `localizacion`, `localización` o su versión codificada.
+- El área de trabajo del buscador (mapa + listado) **se abre al instante** al pulsar Buscar,
+  mostrando el progreso sobre el mapa, en lugar de esperar a que lleguen los datos.
+- Si OpenStreetMap responde sin datos, se recurre a Nominatim antes de mostrar un vacío, y
+  el mensaje distingue "no hay negocios" de "los servidores no han respondido".
+
 ## [2.0.7] - 2026-10-16
 
 ### Anadido

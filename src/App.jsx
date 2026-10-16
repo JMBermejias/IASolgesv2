@@ -26,10 +26,32 @@ const VIEWS = {
   credenciales: { title: 'Credenciales', subtitle: 'Datos del titular, licencia MIT y acceso a GitHub' }
 };
 
+/**
+ * Normaliza el nombre de una vista: descodifica el hash, quita tildes y lo pasa a
+ * minúsculas, para que '#/localizacion', '#/localización' y '#/localizaci%C3%B3n'
+ * abran siempre la misma pantalla aunque alguien use la palabra acentuada.
+ */
+function normalizarVista(valor) {
+  let v = String(valor || '');
+  try { v = decodeURIComponent(v); } catch (_) { /* hash mal formado */ }
+  return v
+    .trim()
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/\s+/g, '');
+}
+
 function parseHash() {
   const raw = window.location.hash.replace(/^#\/?/, '');
-  const [view = 'inicio', id = ''] = raw.split('/');
-  return { view: VIEWS[view] ? view : 'inicio', id: decodeURIComponent(id) };
+  const [vista = 'inicio', id = ''] = raw.split('/');
+  const clave = normalizarVista(vista);
+  let parametro = id;
+  try { parametro = decodeURIComponent(id); } catch (_) { parametro = id; }
+  return {
+    view: VIEWS[clave] ? clave : 'inicio',
+    id: parametro
+  };
 }
 
 function Shell() {
@@ -42,8 +64,9 @@ function Shell() {
   const [booting, setBooting] = useState(true);
 
   const navigate = useCallback((view, id = '') => {
-    window.location.hash = `#/${view}${id ? `/${id}` : ''}`;
-    setRoute({ view, id });
+    const destino = normalizarVista(view);
+    window.location.hash = `#/${destino}${id ? `/${encodeURIComponent(id)}` : ''}`;
+    setRoute({ view: VIEWS[destino] ? destino : 'inicio', id });
   }, []);
 
   const reloadSettings = useCallback(async () => {

@@ -389,6 +389,19 @@ async function search({ query, lat, lon, radius = 5, category = 'todos', limit, 
     }
   }
 
+  // Si Overpass responde pero sin datos (servidor saturado o sin cobertura),
+  // se recurre a Nominatim antes de devolver un resultado vacio.
+  if (!raw.elements.length) {
+    try {
+      const elements = await nominatimPois({ center, category, limit: maxClientes });
+      if (elements.length) {
+        raw = { elements };
+        motor = 'nominatim';
+        if (process.env.IASOLGES_DEBUG) console.log(`[overpass] sin datos, usando Nominatim: ${elements.length}`);
+      }
+    } catch (_) { /* sin alternativas disponibles */ }
+  }
+
   const elements = (raw.elements || []).map((el) => {
     const lat2 = el.lat ?? el.center?.lat;
     const lon2 = el.lon ?? el.center?.lon;

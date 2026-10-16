@@ -20,7 +20,7 @@ export default function Credenciales({ info, settings, navigate }) {
 
   return (
     <div className="stack">
-      <BackHome extra={<button className="btn sm" onClick={() => navigate('configuración', 'github')}>⚙️ Editar credenciales</button>} />
+      <BackHome extra={<button className="btn sm" onClick={() => navigate('configuracion', 'github')}>⚙️ Editar credenciales</button>} />
 
       <Card icon="🔑" title="Credenciales del titular" subtitle="Datos del propietario y autor de IASolges.v2">
         <div className="grid grid-2">

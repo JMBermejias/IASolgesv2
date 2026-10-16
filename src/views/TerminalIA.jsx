@@ -95,7 +95,7 @@ export default function TerminalIA({ settings, info, navigate }) {
               <button className={`btn sm ${modo === 'shell' ? 'primary' : ''}`} onClick={() => setModo('shell')}>⌨️ Shell del sistema</button>
               <div className="spacer" />
               <span className="chip static" title="Motor activo">{settings?.provider} · {modeloActual}</span>
-              <button className="btn sm ghost" onClick={() => navigate('configuración', 'proveedores')}>⚙️ Cambiar modelo</button>
+              <button className="btn sm ghost" onClick={() => navigate('configuracion', 'proveedores')}>⚙️ Cambiar modelo</button>
             </div>
           </Card>
 

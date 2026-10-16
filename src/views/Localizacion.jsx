@@ -12,6 +12,7 @@ export default function Localizacion({ settings, navigate, id }) {
   const [center, setCenter] = useState(DEFAULT_CENTER);
   const [resultado, setResultado] = useState(null);
   const [buscando, setBuscando] = useState(false);
+  const [areaAbierta, setAreaAbierta] = useState(false);
   const [sel, setSel] = useState([]);
   const [filtro, setFiltro] = useState('');
   const [detalle, setDetalle] = useState(null);
@@ -35,6 +36,8 @@ export default function Localizacion({ settings, navigate, id }) {
   }, [buscando]);
 
   const buscar = async () => {
+    // El area de trabajo (mapa + listado) se abre al instante, antes de tener datos
+    setAreaAbierta(true);
     setBuscando(true);
     setAnalisis(null);
     try {
@@ -152,35 +155,50 @@ export default function Localizacion({ settings, navigate, id }) {
         </div>
       </Card>
 
-      {buscando && (
-        <Card>
-          <div className="row">
-            <span className="spinner lg" />
-            <div>
-              <b>Analizando el area y calculando probabilidades… ({segundos}s)</b>
-              <div className="small muted">
-                Consultando OpenStreetMap (Overpass) y geocodificando. La primera consulta puede tardar unos segundos
-                porque los servidores publicos de mapas estan compartidos.
-              </div>
-            </div>
-          </div>
-        </Card>
-      )}
 
-      {!buscando && resultado && (
+      {(resultado || areaAbierta) && (
         <>
           <div className="split" style={{ gridTemplateColumns: '1fr 430px' }}>
-            <Card bodyClass="tight" title={`Mapa · ${resultado.clientes.length} resultados`} icon="🗺️"
-              subtitle={`${resultado.center.label}${resultado.incluidosPequenos ? ' · incluye pequeñas empresas y autónomos' : ''}${resultado.truncado ? ` · mostrando el máximo configurado (${resultado.limite}) de ${resultado.total} negocios` : ''}`}
+            <Card bodyClass="tight" title={resultado ? `Mapa · ${resultado.clientes.length} resultados` : 'Mapa de clientes'} icon="🗺️"
+              subtitle={resultado ? `${resultado.center.label}${resultado.incluidosPequenos ? ' · incluye pequeñas empresas y autónomos' : ''}${resultado.truncado ? ` · mostrando el máximo configurado (${resultado.limite}) de ${resultado.total} negocios` : ''}` : 'Preparado: pulsa Buscar para localizar clientes'}
               actions={
                 <>
-                  <button className="btn sm" onClick={analizarIA} disabled={analizando}>
+                  <button className="btn sm" onClick={analizarIA} disabled={analizando || !resultado}>
                     {analizando ? <span className="spinner" /> : '🤖'} Análisis IA
                   </button>
-                  <button className="btn sm" onClick={guardar}>💾 Guardar ({sel.length})</button>
-                  <button className="btn primary sm" onClick={irAPresupuesto}>📄 Presupuestar</button>
+                  <button className="btn sm" onClick={guardar} disabled={!resultado}>💾 Guardar ({sel.length})</button>
+                  <button className="btn primary sm" onClick={irAPresupuesto} disabled={!resultado}>📄 Presupuestar</button>
                 </>
               }>
+              {!resultado && (
+                <div style={{ position: 'relative', height: 560 }}>
+                  <MapView
+                    center={center}
+                    zoom={13}
+                    radiusKm={form.radius}
+                    clientes={[]}
+                    selected={[]}
+                    height={560}
+                    dark={['grafito', 'medianoche'].includes(settings?.theme)}
+                  />
+                  <div style={{
+                    position: 'absolute', inset: 0, zIndex: 500, display: 'grid', placeItems: 'center',
+                    background: 'color-mix(in srgb, var(--surface) 78%, transparent)', backdropFilter: 'blur(2px)'
+                  }}>
+                    <div className="card card-body center" style={{ boxShadow: 'var(--shadow-lg)', maxWidth: 420 }}>
+                      <span className="spinner lg" />
+                      <div className="bold" style={{ marginTop: 10 }}>
+                        Buscando clientes… {segundos}s
+                      </div>
+                      <div className="small muted" style={{ marginTop: 6 }}>
+                        Localizando negocios reales de OpenStreetMap en un radio de {form.radius} km y
+                        calculando la probabilidad de cada uno.
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
+              {resultado && (
               <MapView
                 center={center}
                 zoom={13}
@@ -197,15 +215,24 @@ export default function Localizacion({ settings, navigate, id }) {
                 fitKey={resultado.clientes.length}
                 height={560}
               />
+              )}
             </Card>
 
             <Card bodyClass="tight" title="Listado de posibles clientes" icon="🏪"
               actions={<button className="btn sm ghost" onClick={seleccionarTodos}>{sel.length === filtrados.length ? 'Quitar todo' : 'Seleccionar todo'}</button>}>
               <input type="search" placeholder="Filtrar por nombre, sector o dirección" value={filtro}
-                onChange={(e) => setFiltro(e.target.value)} style={{ marginBottom: 8 }} />
+                onChange={(e) => setFiltro(e.target.value)} style={{ marginBottom: 8 }} disabled={!resultado} />
               <div className="client-list">
-                {filtrados.length === 0 && (
-                  <Empty icon="🔍" title="Sin resultados" text="Amplia el radio, sube el máximo de clientes o cambia el sector." />
+                {!resultado && (
+                  <Empty icon="⏳" title="Area de trabajo lista" text="Pulsa Buscar para localizar los clientes de esta zona." />
+                )}
+                {resultado && filtrados.length === 0 && (
+                  resultado.total === 0 ? (
+                    <Empty icon="📡" title="Los servidores de mapas no han devuelto datos"
+                      text="Puede ser que OpenStreetMap esté saturado en este momento. Amplía el radio o repite la búsqueda en unos segundos." />
+                  ) : (
+                    <Empty icon="🔍" title="Sin resultados" text="Amplía el radio, sube el máximo de clientes o cambia el sector." />
+                  )
                 )}
                 {filtrados.map((c) => (
                   <div key={c.id} className={`client-row ${sel.find((s) => s.id === c.id) ? 'selected' : ''}`} onClick={() => toggle(c)}>
