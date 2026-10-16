@@ -308,7 +308,9 @@ async function refineCenter(center, query) {
 }
 
 /** Busqueda completa de clientes potenciales alrededor de un punto */
-async function search({ query, lat, lon, radius = 5, category = 'todos', limit = 80 }) {
+async function search({ query, lat, lon, radius = 5, category = 'todos', limit }) {
+  // Cantidad maxima de clientes solicitada por el usuario (10 a 300)
+  const maxClientes = Math.min(300, Math.max(10, parseInt(limit, 10) || 60));
   let center = { lat, lon, label: query || 'Punto seleccionado' };
   let candidatos = [];
   if (query && (lat === undefined || lon === undefined)) {
@@ -319,7 +321,7 @@ async function search({ query, lat, lon, radius = 5, category = 'todos', limit =
     center = await refineCenter({ lat: mejor.lat, lon: mejor.lon, label: mejor.label }, query);
   }
   const cat = categoryById(category);
-  const queryOsm = buildOverpassQuery(cat, center.lat, center.lon, radius, limit);
+  const queryOsm = buildOverpassQuery(cat, center.lat, center.lon, radius, maxClientes);
   let raw;
   let motor = 'overpass';
   if (process.env.IASOLGES_DEBUG) console.log(`[overpass] consulta:\n${queryOsm}`);
@@ -327,12 +329,12 @@ async function search({ query, lat, lon, radius = 5, category = 'todos', limit =
     raw = await overpass(queryOsm);
     if (!raw.elements.length && category !== 'todos') {
       // sin resultados en el radio: ampliamos automaticamente una vez
-      raw = await overpass(buildOverpassQuery(cat, center.lat, center.lon, Math.min(radius * 2.5, 40), limit));
+      raw = await overpass(buildOverpassQuery(cat, center.lat, center.lon, Math.min(radius * 2.5, 40), maxClientes));
     }
   } catch (e) {
     motor = 'nominatim';
     try {
-      const elements = await nominatimPois({ center, category, limit });
+      const elements = await nominatimPois({ center, category, limit: maxClientes });
       raw = { elements };
     } catch (e2) {
       throw new Error(`No se han podido obtener datos de localizacion: ${e2.message} (Overpass: ${e.message})`);
@@ -348,7 +350,7 @@ async function search({ query, lat, lon, radius = 5, category = 'todos', limit =
   elements.forEach((el) => { el.distanceKm = haversine(center, { lat: el.lat, lon: el.lon }); });
   elements.sort((a, b) => a.distanceKm - b.distanceKm);
 
-  const clientes = elements.slice(0, limit).map((el, i) =>
+  const clientes = elements.slice(0, maxClientes).map((el, i) =>
     analyseClient(el, { radius, center, totalFound: elements.length, index: i })
   );
 
@@ -359,6 +361,8 @@ async function search({ query, lat, lon, radius = 5, category = 'todos', limit =
     total: elements.length,
     radio: radius,
     motor,
+    limite: maxClientes,
+    truncado: elements.length > maxClientes,
     clientes
   };
 }

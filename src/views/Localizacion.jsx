@@ -42,7 +42,9 @@ export default function Localizacion({ settings, navigate, id }) {
       setResultado(r);
       setCenter(r.center);
       setSel([]);
-      push(`${r.total} negocios analizados en ${r.categoria.label}`, 'success');
+      push(r.truncado
+        ? `${r.clientes.length} clientes de ${r.total} encontrados (maximo configurado: ${r.limite})`
+        : `${r.total} negocios analizados en ${r.categoria.label}`, 'success');
     } catch (e) {
       push(e.message, 'error', 7000);
     } finally {
@@ -103,7 +105,7 @@ export default function Localizacion({ settings, navigate, id }) {
       <BackHome extra={<span className="chip primary">{sel.length} seleccionados</span>} />
 
       <Card icon="🎯" title="Buscador de clientes en el mapa" subtitle="Localiza negocios reales de OpenStreetMap y calcula la probabilidad de contratacion por medios de analisis">
-        <div className="grid" style={{ gridTemplateColumns: '2fr 1fr 1fr auto', gap: 12, alignItems: 'end' }}>
+        <div className="grid" style={{ gridTemplateColumns: 'minmax(200px, 2fr) minmax(150px, 1fr) minmax(180px, 1fr) 282px auto', gap: 12, alignItems: 'end' }}>
           <Field label="Ubicacion, direccion o negocio">
             <input type="text" value={form.query} placeholder="Ej. Benidorm, Alicante o Calle Mayor 1"
               onChange={(e) => setForm({ ...form, query: e.target.value })}
@@ -117,6 +119,18 @@ export default function Localizacion({ settings, navigate, id }) {
           <Field label={`Radio de analisis: ${form.radius} km`}>
             <input type="range" min="1" max="25" step="1" value={form.radius}
               onChange={(e) => setForm({ ...form, radius: Number(e.target.value) })} />
+          </Field>
+          <Field label={`Maximo de clientes: ${form.limit}`}>
+            <div className="row row-tight" style={{ flexWrap: 'nowrap' }}>
+              <input type="number" min="10" max="300" step="5" value={form.limit} title="De 10 a 300 clientes por busqueda"
+                style={{ width: 78, flex: '0 0 78px' }}
+                onChange={(e) => setForm({ ...form, limit: Math.min(300, Math.max(10, Number(e.target.value) || 10)) })}
+                onKeyDown={(e) => e.key === 'Enter' && buscar()} />
+              {[20, 50, 100, 200].map((n) => (
+                <button key={n} type="button" className={`chip ${form.limit === n ? 'on' : ''}`} title={`${n} clientes maximos`}
+                  onClick={() => setForm({ ...form, limit: n })}>{n}</button>
+              ))}
+            </div>
           </Field>
           <div className="row row-tight">
             <button className="btn primary lg" onClick={buscar} disabled={buscando}>
@@ -152,7 +166,7 @@ export default function Localizacion({ settings, navigate, id }) {
         <>
           <div className="split" style={{ gridTemplateColumns: '1fr 430px' }}>
             <Card bodyClass="tight" title={`Mapa · ${resultado.clientes.length} resultados`} icon="🗺️"
-              subtitle={resultado.center.label}
+              subtitle={`${resultado.center.label}${resultado.truncado ? ` · mostrando el maximo configurado (${resultado.limite}) de ${resultado.total} negocios` : ''}`}
               actions={
                 <>
                   <button className="btn sm" onClick={analizarIA} disabled={analizando}>
@@ -185,7 +199,9 @@ export default function Localizacion({ settings, navigate, id }) {
               <input type="search" placeholder="Filtrar por nombre, sector o direccion" value={filtro}
                 onChange={(e) => setFiltro(e.target.value)} style={{ marginBottom: 8 }} />
               <div className="client-list">
-                {filtrados.length === 0 && <Empty icon="🔍" title="Sin resultados" text="Amplia el radio o cambia el sector." />}
+                {filtrados.length === 0 && (
+                  <Empty icon="🔍" title="Sin resultados" text="Amplia el radio, sube el maximo de clientes o cambia el sector." />
+                )}
                 {filtrados.map((c) => (
                   <div key={c.id} className={`client-row ${sel.find((s) => s.id === c.id) ? 'selected' : ''}`} onClick={() => toggle(c)}>
                     <input type="checkbox" checked={Boolean(sel.find((s) => s.id === c.id))} onChange={() => toggle(c)} onClick={(e) => e.stopPropagation()} />
