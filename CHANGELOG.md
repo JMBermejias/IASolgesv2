@@ -2,6 +2,16 @@
 
 Todas las novedades de IASolges.v2.
 
+## [2.0.9] - 2026-10-16
+
+### Corregido
+- El filtro por sector vuelve a(strictamente) funcionar. Al elegir un sector concreto se muestran
+  **solo** negocios de ese sector: comprobado con "Restaurantes y hostelería" (solo restaurant, cafe,
+  bar, pub y fast_food), "Talleres y automoción" (plumber, car_repair, electrician, painter...) y
+  "Salud y clínicas". La casilla "Incluir pequeñas empresas y autónomos" ya no se mezcla con el
+  sector: queda activa solo en "Todos los sectores" y "Pequeñas empresas y autónomos", y se
+  desactiva visualmente cuando hay un sector elegido para que el filtro sea evidente.
+
 ## [2.0.8] - 2026-10-16
 
 ### Corregido

@@ -34,6 +34,8 @@ const CATEGORIES = [
  * Se añaden a CUALQUIER búsqueda (si el usuario lo activa) para que no se queden
  * fuera negocios pequeños que no usan las etiquetas del sector buscado.
  */
+const SECTORES_AMPLIOS = ['todos', 'pequenas'];
+
 const ETIQUETAS_PEQUENOS = [
   { shop: ['*'] },
   { craft: ['*'] },
@@ -114,17 +116,25 @@ async function reverse(lat, lon) {
 
 /**
  * Construye la consulta de Overpass.
- * `pool` es el numero de elementos que se piden al servidor (mas越大 que el limite
- * final, para tener margen y poder quedarse con los MAS CERCANOS tras ordenar,
- * en lugar de los que el servidor entregue por azar).
- * `incluirPequenos` añade las etiquetas de pequeños negocios y autónomos.
+ *
+ * REGLA IMPORTANTE: el sector elegido es un FILTRO ESTRICTO. Si eliges un sector
+ * concreto (restaurantes, comercios, salud...) solo se usan sus etiquetas, aunque
+ * marques "incluir pequeñas empresas y autónomos". Ese modo amplio solo se aplica a
+ * "Todos los sectores" y "Pequeñas empresas y autónomos", donde el objetivo es
+ * justamente barrer todo el tejido comercial de la zona.
+ *
+ * `pool` es el número de elementos pedidos al servidor (mayor que el límite final)
+ * para quedarse con los MÁS CERCANOS tras ordenar, en lugar de los que el servidor
+ * entregue por azar.
  */
 function buildOverpassQuery(cat, lat, lon, radiusKm, pool, incluirPequenos = false) {
   const radius = Math.max(100, Math.round(radiusKm * 1000)); // Overpass trabaja en metros
   const clauses = [];
   const tags = { ...cat.tags };
 
-  if (incluirPequenos) {
+  // El modo amplio solo se aplica si NO hay un sector concreto que respetar
+  const sectorEstricto = !SECTORES_AMPLIOS.includes(cat.id);
+  if (incluirPequenos && !sectorEstricto) {
     for (const extra of ETIQUETAS_PEQUENOS) {
       for (const [k, v] of Object.entries(extra)) {
         if (!tags[k]) tags[k] = v.includes('*') ? ['*'] : [...(tags[k] || []), ...v];
@@ -435,7 +445,8 @@ async function search({ query, lat, lon, radius = 5, category = 'todos', limit, 
     radio: radius,
     motor,
     limite: maxClientes,
-    incluidosPequenos: Boolean(incluirPequenos),
+    incluidosPequenos: Boolean(incluirPequenos) && SECTORES_AMPLIOS.includes(cat.id),
+    sectorEstricto: !SECTORES_AMPLIOS.includes(cat.id),
     truncado: sinDuplicados.length > maxClientes,
     clientes
   };

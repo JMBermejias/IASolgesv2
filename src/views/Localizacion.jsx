@@ -21,6 +21,8 @@ export default function Localizacion({ settings, navigate, id }) {
   const [objetivo, setObjetivo] = useState('');
   const [guardados, setGuardados] = useState([]);
   const [segundos, setSegundos] = useState(0);
+  const sectorAmplio = ['todos', 'pequenas'].includes(form.category);
+  const etiquetaSector = categorias.find((c) => c.id === form.category)?.label || '';
   const panelRef = useRef(null);
 
   useEffect(() => {
@@ -105,7 +107,14 @@ export default function Localizacion({ settings, navigate, id }) {
 
   return (
     <div className="stack">
-      <BackHome extra={<span className="chip primary">{sel.length} seleccionados</span>} />
+      <BackHome extra={
+        <>
+          <span className={`chip ${sectorAmplio ? 'info' : 'warning'}`}>
+            {sectorAmplio ? `Todos los sectores${form.incluirPequenos ? ' + pequeñas empresas y autónomos' : ''}` : `Sector: ${etiquetaSector}`}
+          </span>
+          <span className="chip primary">{sel.length} seleccionados</span>
+        </>
+      } />
 
       <Card icon="🎯" title="Buscador de clientes en el mapa" subtitle="Localiza negocios reales de OpenStreetMap y calcula la probabilidad de contratacion por medios de análisis">
         <div className="grid" style={{ gridTemplateColumns: 'minmax(200px, 2fr) minmax(150px, 1fr) minmax(180px, 1fr) 282px auto', gap: 12, alignItems: 'end' }}>
@@ -142,8 +151,14 @@ export default function Localizacion({ settings, navigate, id }) {
           </div>
         </div>
         <div className="row" style={{ marginTop: 4 }}>
-          <label className="check nowrap" title="Añade comercios, talleres, profesiones y autónomos con cualquier tipo de etiqueta">
-            <input type="checkbox" checked={form.incluirPequenos}
+          <label
+            className="check nowrap"
+            title={sectorAmplio
+              ? 'Amplía la búsqueda a comercios, talleres, oficios y autónomos de cualquier tipo (solo en "Todos los sectores")'
+              : `Sector activo: ${etiquetaSector}. La búsqueda se limita a este sector`}
+            style={{ opacity: sectorAmplio ? 1 : 0.55, cursor: sectorAmplio ? 'pointer' : 'not-allowed' }}
+          >
+            <input type="checkbox" checked={form.incluirPequenos} disabled={!sectorAmplio}
               onChange={(e) => setForm({ ...form, incluirPequenos: e.target.checked })} />
             🏪 Incluir pequeñas empresas y autónomos
           </label>
@@ -160,7 +175,18 @@ export default function Localizacion({ settings, navigate, id }) {
         <>
           <div className="split" style={{ gridTemplateColumns: '1fr 430px' }}>
             <Card bodyClass="tight" title={resultado ? `Mapa · ${resultado.clientes.length} resultados` : 'Mapa de clientes'} icon="🗺️"
-              subtitle={resultado ? `${resultado.center.label}${resultado.incluidosPequenos ? ' · incluye pequeñas empresas y autónomos' : ''}${resultado.truncado ? ` · mostrando el máximo configurado (${resultado.limite}) de ${resultado.total} negocios` : ''}` : 'Preparado: pulsa Buscar para localizar clientes'}
+              subtitle={
+                resultado
+                  ? [
+                    `${resultado.total} negocios encontrados`,
+                    resultado.sectorEstricto ? `sector: ${resultado.categoria.label}` : 'todos los sectores',
+                    resultado.incluidosPequenos ? 'incluye pequeñas empresas y autónomos' : null,
+                    resultado.truncado ? `mostrando los ${resultado.clientes.length} más cercanos (máximo configurado: ${resultado.limite})` : null
+                  ].filter(Boolean).join(' · ')
+                  : sectorAmplio
+                    ? 'Pulsa Buscar para localizar clientes'
+                    : `Sector activo: ${etiquetaSector}. Pulsa Buscar para localizar clientes`
+              }
               actions={
                 <>
                   <button className="btn sm" onClick={analizarIA} disabled={analizando || !resultado}>
