@@ -7,7 +7,7 @@ import { api } from '../lib/api.js';
 /**
  * Terminal embebida.
  * - Con `sessionId`+`shell`, abre una sesion PTY real del sistema.
- * - Con `feed`, escribe el texto que llega por streaming (La Fabrica / IA).
+ * - Con `feed`, escribe el texto que llega por streaming (La Fábrica / IA).
  */
 export default function XTerminal({
   sessionId,
@@ -80,7 +80,7 @@ export default function XTerminal({
     });
     const offClose = api.terminal.onClose(({ id, code }) => {
       if (termRef.current && id === termRef.current.__sessionId) {
-        termRef.current.write(`\r\n\x1b[90m[sesion terminada · codigo ${code}]\x1b[0m\r\n`);
+        termRef.current.write(`\r\n\x1b[90m[sesión terminada · código ${code}]\x1b[0m\r\n`);
       }
     });
 
@@ -115,7 +115,7 @@ export default function XTerminal({
     return () => dataDisp.dispose();
   }, [shell]);
 
-  /* Streaming de texto externo (IA / Fabrica) */
+  /* Streaming de texto externo (IA / Fábrica) */
   useEffect(() => {
     if (!feed || !termRef.current) return undefined;
     pendingRef.current = '';

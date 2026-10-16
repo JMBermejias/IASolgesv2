@@ -51,7 +51,7 @@ export default function Legal({ id, settings, navigate }) {
       setAnalisis(r);
       setTab('informe');
       await cargar();
-      push(`Analisis completado: ${r.veredicto?.nivel} (${r.score}%)`, r.score >= 70 ? 'success' : 'warning', 6000);
+      push(`Análisis completado: ${r.veredicto?.nivel} (${r.score}%)`, r.score >= 70 ? 'success' : 'warning', 6000);
     } catch (e) {
       push(e.message, 'error', 9000);
     } finally { setTrabajando(false); }
@@ -77,7 +77,7 @@ export default function Legal({ id, settings, navigate }) {
         value={tab}
         onChange={setTab}
         tabs={[
-          { id: 'analizar', label: 'Nuevo analisis', icon: '🔍' },
+          { id: 'analizar', label: 'Nuevo análisis', icon: '🔍' },
           { id: 'informes', label: 'Informes', icon: '📑', count: informes.length },
           ...(analisis ? [{ id: 'informe', label: 'Informe actual', icon: '📊' }] : []),
           { id: 'normativa', label: 'Normativa', icon: '📚' }
@@ -86,7 +86,7 @@ export default function Legal({ id, settings, navigate }) {
 
       {tab === 'analizar' && (
         <>
-          <Card icon="⚖️" title="Analisis legal con IA" subtitle="Comprueba desde las cookies hasta el ultimo detalle y devuelve el problema y su solucion">
+          <Card icon="⚖️" title="Análisis legal con IA" subtitle="Comprueba desde las cookies hasta el último detalle y devuelve el problema y su solución">
             <div className="row row-tight" style={{ marginBottom: 14 }}>
               {[['url', '🌐 Web / URL'], ['proyecto', '🏗️ Proyecto generado'], ['documento', '📄 Documento o texto']].map(([idv, label]) => (
                 <button key={idv} className={`btn sm ${form.modo === idv ? 'primary' : ''}`} onClick={() => setForm({ ...form, modo: idv })}>{label}</button>
@@ -94,14 +94,14 @@ export default function Legal({ id, settings, navigate }) {
             </div>
 
             {form.modo === 'url' && (
-              <Field label="URL a analizar" hint="Se comprueban: HTTPS, cookies y consentimiento, politica de privacidad, aviso legal, identificacion del titular, terms, cabeceras de seguridad, accesibilidad, SEO, contenido mixto y mucho mas.">
+              <Field label="URL a analizar" hint="Se comprueban: HTTPS, cookies y consentimiento, política de privacidad, aviso legal, identificacion del titular, terms, cabeceras de seguridad, accesibilidad, SEO, contenido mixto y mucho mas.">
                 <input type="text" placeholder="https://www.ejemplo.es" value={form.url} onChange={(e) => setForm({ ...form, url: e.target.value })}
                   onKeyDown={(e) => e.key === 'Enter' && analizar()} />
               </Field>
             )}
 
             {form.modo === 'proyecto' && (
-              <Field label="Proyecto generado en La Fabrica" hint="Se auditan secretos en el codigo, consentimiento de cookies, politicas, licencia, documentacion y uso de terceros.">
+              <Field label="Proyecto generado en La Fábrica" hint="Se auditan secretos en el código, consentimiento de cookies, políticas, licencia, documentación y uso de terceros.">
                 <select value={form.proyectoId} onChange={(e) => setForm({ ...form, proyectoId: e.target.value })}>
                   <option value="">— Selecciona un proyecto —</option>
                   {proyectos.map((p) => <option key={p.id} value={p.id}>{p.nombre} · {p.tipo}</option>)}
@@ -120,7 +120,7 @@ export default function Legal({ id, settings, navigate }) {
                     </span>
                   ))}
                 </div>
-                <Field label="Titulo del analisis"><input type="text" value={form.titulo} onChange={(e) => setForm({ ...form, titulo: e.target.value })} placeholder="Ej. Contrato de arrendamiento" /></Field>
+                <Field label="Titulo del análisis"><input type="text" value={form.titulo} onChange={(e) => setForm({ ...form, titulo: e.target.value })} placeholder="Ej. Contrato de arrendamiento" /></Field>
                 <Field label="Texto a analizar" hint="Pega aqui cualquier documento, clausula o contenido. Puedes combinarlo con los archivos adjuntos.">
                   <textarea rows={8} value={form.texto} onChange={(e) => setForm({ ...form, texto: e.target.value })} placeholder="Pega el contenido del documento…" />
                 </Field>
@@ -129,24 +129,24 @@ export default function Legal({ id, settings, navigate }) {
 
             <div className="row">
               <button className="btn primary lg" onClick={analizar} disabled={trabajando}>
-                {trabajando ? <><span className="spinner" /> Analizando con IA...</> : '⚖️ Ejecutar analisis legal'}
+                {trabajando ? <><span className="spinner" /> Analizando con IA...</> : '⚖️ Ejecutar análisis legal'}
               </button>
               <span className="small muted">Modelo: {settings?.provider} · {settings?.models?.[settings?.provider] || ''}</span>
             </div>
           </Card>
 
-          <Card icon="📚" title="Que se comprueba" subtitle="ElAnalisis automatico mas la revision profunda de la IA">
+          <Card icon="📚" title="Que se comprueba" subtitle="ElAnalisis automático mas la revisión profunda de la IA">
             <div className="grid grid-3">
               {[
-                ['🍪', 'Cookies', 'Banner, consentimiento previo, politica, rechazo, terceros, retirada del consentimiento.'],
-                ['🛡️', 'Proteccion de datos', 'Politica de privacidad, info al interesado, bases juridicas, contratos con encargados y transferencias.'],
-                ['📜', 'Informacion legal', 'Aviso legal, identificacion del titular (CIF/NIF y domicilio), condiciones de uso.'],
+                ['🍪', 'Cookies', 'Banner, consentimiento previo, política, rechazo, terceros, retirada del consentimiento.'],
+                ['🛡️', 'Protección de datos', 'Política de privacidad, info al interesado, bases juridicas, contratos con encargados y transferencias.'],
+                ['📜', 'Información legal', 'Aviso legal, identificacion del titular (CIF/NIF y domicilio), condiciones de uso.'],
                 ['🛒', 'Contratacion', 'Terminos, precios, forma de pago, desistimiento, garantia, derechos del consumidor.'],
-                ['🔐', 'Seguridad', 'HTTPS, HSTS, CSP, mixt content, secretos en codigo, practicas seguras.'],
+                ['🔐', 'Seguridad', 'HTTPS, HSTS, CSP, mixt content, secretos en código, prácticas seguras.'],
                 ['♿', 'Accesibilidad', 'RD 1112/2018: lang, alt, foco, contraste, navegacion por teclado.'],
                 ['🔎', 'SEO', 'Metadatos, canonical, Open Graph, datos estructurados, sitemap y robots.'],
                 ['⚖️', 'Propiedad industrial', 'Licencias de terceros, atribuciones, copyleft, marcas y nombre comercial.'],
-                ['📞', 'Comunicaciones', 'LSSI-CE, LAL, informacion al usuario, publicidad y bajas.']
+                ['📞', 'Comunicaciones', 'LSSI-CE, LAL, información al usuario, publicidad y bajas.']
               ].map(([i, t, d]) => (
                 <div key={t} className="card card-body" style={{ boxShadow: 'none' }}>
                   <b>{i} {t}</b>
@@ -161,7 +161,7 @@ export default function Legal({ id, settings, navigate }) {
       {tab === 'informes' && (
         <Card icon="📑" title="Informes legales" subtitle="Historial completo de auditorias">
           {informes.length === 0 ? (
-            <Empty icon="⚖️" title="Sin analisis" text="Analiza una web, un proyecto o un documento." action={<button className="btn primary" onClick={() => setTab('analizar')}>Nuevo analisis</button>} />
+            <Empty icon="⚖️" title="Sin análisis" text="Analiza una web, un proyecto o un documento." action={<button className="btn primary" onClick={() => setTab('analizar')}>Nuevo análisis</button>} />
           ) : (
             <div className="table-wrap">
               <table className="data">
@@ -212,7 +212,7 @@ export default function Legal({ id, settings, navigate }) {
 
           <div className="grid" style={{ gridTemplateColumns: '1fr 320px' }}>
             <div className="stack">
-              <Card icon="⚠️" title={`Incumplimientos y recomendaciones (${incumplimientos.length})`} subtitle="Pulsa cualquier hallazgo para ver el problema y la solucion">
+              <Card icon="⚠️" title={`Incumplimientos y recomendaciones (${incumplimientos.length})`} subtitle="Pulsa cualquier hallazgo para ver el problema y la solución">
                 {incumplimientos.length === 0 ? <Empty icon="✅" title="Sin incumplimientos" text="Todo lo comprobado cumple los requisitos." /> : (
                   incumplimientos.map((h) => (
                     <div key={h.id} className="finding" onClick={() => setHallazgo(h)}>
@@ -259,7 +259,7 @@ export default function Legal({ id, settings, navigate }) {
                 <ul className="small soft" style={{ paddingLeft: 18 }}>
                   {(analisis.avisos || []).map((a, i) => <li key={i}>{a}</li>)}
                 </ul>
-                {analisis.errorIA && <div className="alert warn small"><div>La parte de IA no pudo completarse: {analisis.errorIA}. Se muestra elAnalisis estatico.</div></div>}
+                {analisis.errorIA && <div className="alert warn small"><div>La parte de IA no pudo completarse: {analisis.errorIA}. Se muestra el análisis estatico.</div></div>}
               </Card>
               <Card icon="📚" title="Normativa aplicable">
                 <div className="stack-sm">
@@ -280,7 +280,7 @@ export default function Legal({ id, settings, navigate }) {
       )}
 
       {tab === 'normativa' && (
-        <Card icon="📚" title="Normativa de referencia" subtitle="Documentacion oficial que se aplica en los analisis">
+        <Card icon="📚" title="Normativa de referencia" subtitle="Documentación oficial que se aplica en los análisis">
           <div className="grid grid-2">
             {normativa.map((n) => (
               <div key={n.id} className="card card-body" style={{ boxShadow: 'none' }}>
@@ -291,7 +291,7 @@ export default function Legal({ id, settings, navigate }) {
             ))}
           </div>
           <div className="alert warn" style={{ marginTop: 14 }}>
-            <div>Este analisis es una orientacion tecnica automatizada y <b>no sustituye al asesoramiento juridico profesional</b>. Antes de publicar, valida las conclusiones con tu abogado.</div>
+            <div>Este análisis es una orientacion técnica automatizada y <b>no sustituye al asesoramiento jurídico profesional</b>. Antes de publicar, valida las conclusiones con tu abogado.</div>
           </div>
         </Card>
       )}
@@ -306,7 +306,7 @@ export default function Legal({ id, settings, navigate }) {
             <div className="row row-tight">
               <span className="sev-badge" style={{ background: `${SEV_COLOR[hallazgo.severidad]}1a`, color: SEV_COLOR[hallazgo.severidad] }}>{SEV_LABEL[hallazgo.severidad] || hallazgo.severidad}</span>
               <span className="chip static">{hallazgo.categoria}</span>
-              <span className="chip static">{hallazgo.fuente === 'ia' ? 'Detectado por IA' : 'Analisis automatico'}</span>
+              <span className="chip static">{hallazgo.fuente === 'ia' ? 'Detectado por IA' : 'Análisis automático'}</span>
             </div>
             <div>
               <h3>Problema detectado</h3>
@@ -314,7 +314,7 @@ export default function Legal({ id, settings, navigate }) {
               {hallazgo.impacto && <div className="alert warn small"><div><b>Impacto:</b> {hallazgo.impacto}</div></div>}
             </div>
             <div>
-              <h3>Solucion a emplear</h3>
+              <h3>Solución a emplear</h3>
               <p className="soft">{hallazgo.solucion}</p>
             </div>
             {hallazgo.referencia && (

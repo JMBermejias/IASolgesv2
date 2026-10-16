@@ -2,6 +2,41 @@
 
 Todas las novedades de IASolges.v2.
 
+## [2.0.7] - 2026-10-16
+
+### Anadido
+- **La Fábrica**: cuatro tipos de producto nuevos: 🖼️ Imágenes e ilustraciones, 🧊 Render 3D,
+  🎬 Vídeo y animación y 🎧 Audio y música. Cada tipo activa instrucciones técnicas propias en el
+  agente: motor de imágenes con variaciones, inpainting y modo MOCK; escena 3D generada desde texto
+  con three.js y Blender en modo headless y exportación a PNG/OBJ/GLB/FBX; guion por escenas,
+  storyboard, voz TTS, subtítulos SRT y montaje con MoviePy o FFmpeg; y texto a voz con mezcla de
+  pistas para audio.
+- Nuevos servicios presupuestables: Imágenes e ilustraciones con IA, Render 3D y modelado, y
+  Vídeo y animación.
+- Buscador de clientes: interruptor **"Incluir pequeñas empresas y autónomos"** (activo por defecto)
+  que amplía las etiquetas buscadas a comercios, talleres, oficios, sanidad y locales de cualquier
+  tipo, más un sector nuevo **"Pequeñas empresas y autónomos"**.
+
+### Corregido
+- El buscador ya no se queda solo con los negocios más conocidos: pide al servidor el doble de
+  elementos del límite configurado, los ordena por cercanía, elimina duplicados y devuelve los más
+  próximos hasta el número que indicas. En Novelda, con límite 60, pasa de 60 a 111 negocios detectados.
+- Ortografía: más de 400 textos corregidos en toda la aplicación (ñ y tildes), entre ellos "Señal",
+  "Cercanía geográfica", "Añade", "pequeña", "Análisis legal", "Configuración", "Auditoría",
+  "Búsqueda", "Aplicación" y "automáticamente".
+
+## [2.0.6] - 2026-10-16
+
+### Anadido
+- Buscador de clientes: control **"Máximo de clientes"** (de 10 a 300 resultados por búsqueda) con
+  selección rápida 20 / 50 / 100 / 200 y aviso cuando hay más negocios de los pedidos.
+
+## [2.0.5] - 2026-10-16
+
+### Corregido
+- La licencia MIT del repositorio usa el texto oficial en inglés con el nombre del titular, para que
+  GitHub la identifique correctamente, y los datos completos quedan en el fichero `AUTHOR`.
+
 ## [2.0.4] - 2026-10-16
 
 ### Corregido

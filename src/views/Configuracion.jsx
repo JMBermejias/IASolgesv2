@@ -101,7 +101,7 @@ export default function Configuracion({ settings, info, update, setUpdate, navig
       <Tabs value={tab} onChange={setTab} tabs={SECTIONS.map((s) => ({ ...s }))} />
 
       {tab === 'apariencia' && (
-        <Card icon="🎨" title="Apariencia" subtitle="Elige el tema de color de toda la aplicacion" id="apariencia">
+        <Card icon="🎨" title="Apariencia" subtitle="Elige el tema de color de toda la aplicación" id="apariencia">
           <div className="theme-grid">
             {THEMES.map((t) => (
               <button key={t.id} className={`theme-card ${settings?.theme === t.id ? 'on' : ''}`} onClick={() => set({ theme: t.id }, `Tema ${t.name} aplicado`)}>
@@ -124,10 +124,10 @@ export default function Configuracion({ settings, info, update, setUpdate, navig
                 <option value="en">English</option>
               </select>
             </Field>
-            <Field label="Menu lateral plegado">
+            <Field label="Menú lateral plegado">
               <label className="check">
                 <input type="checkbox" checked={Boolean(settings?.ui?.sidebarCollapsed)} onChange={(e) => set({ ui: { ...settings.ui, sidebarCollapsed: e.target.checked } })} />
-                Iniciar con el menu plegado
+                Iniciar con el menú plegado
               </label>
             </Field>
           </div>
@@ -136,7 +136,7 @@ export default function Configuracion({ settings, info, update, setUpdate, navig
 
       {tab === 'proveedores' && (
         <div className="stack" id="proveedores">
-          <Card icon="🤖" title="Proveedor y modelo por defecto" subtitle="Todos los apartados de la aplicacion usan esta configuracion">
+          <Card icon="🤖" title="Proveedor y modelo por defecto" subtitle="Todos los apartados de la aplicación usan esta configuración">
             <div className="grid grid-3">
               <Field label="Proveedor">
                 <select value={settings?.provider || 'opencode'} onChange={(e) => set({ provider: e.target.value }, `Proveedor: ${e.target.value}`)}>
@@ -167,7 +167,7 @@ export default function Configuracion({ settings, info, update, setUpdate, navig
                 🔗 Sincronizar claves con OpenCode
               </button>
               <div className="spacer" />
-              <span className="tiny muted">Las claves se guardan cifradas en tu equipo y se inyectan en OpenCode automaticamente.</span>
+              <span className="tiny muted">Las claves se guardan cifradas en tu equipo y se inyectan en OpenCode automáticamente.</span>
             </div>
           </Card>
 
@@ -192,7 +192,7 @@ export default function Configuracion({ settings, info, update, setUpdate, navig
                     </Field>
                   )}
                   {isOpenCode && (
-                    <Field label="Motor" hint="Los modelos de OpenCode se obtienen automaticamente segun las credenciales configuradas aqui">
+                    <Field label="Motor" hint="Los modelos de OpenCode se obtienen automáticamente segun las credenciales configuradas aqui">
                       <input type="text" value={info?.paths?.opencode || ''} readOnly className="mono" />
                     </Field>
                   )}
@@ -204,7 +204,7 @@ export default function Configuracion({ settings, info, update, setUpdate, navig
                       <button className="btn sm" title="Refrescar modelos reales del proveedor" onClick={() => refrescarModelos(p.id)}>🔄</button>
                     </div>
                   </Field>
-                  <Field label="Probar conexion">
+                  <Field label="Probar conexión">
                     <button className="btn sm block" onClick={() => probar(p.id, settings?.models?.[p.id])} disabled={testing === p.id}>
                       {testing === p.id ? <><span className="spinner" /> Probando</> : '🧪 Enviar prueba'}
                     </button>
@@ -222,7 +222,7 @@ export default function Configuracion({ settings, info, update, setUpdate, navig
       {tab === 'opencode' && (
         <Card icon="⚡" title="OpenCode" subtitle="Motor principal: modelos, agentes y permisos">
           <div className="grid grid-2">
-            <Field label="Ruta del ejecutable" hint="Dejala vacia para detectarla automaticamente">
+            <Field label="Ruta del ejecutable" hint="Dejala vacia para detectarla automáticamente">
               <input type="text" value={settings?.opencode?.binary || ''} placeholder="~/.opencode/bin/opencode"
                 onChange={(e) => set({ opencode: { ...settings.opencode, binary: e.target.value } })} />
             </Field>
@@ -233,7 +233,7 @@ export default function Configuracion({ settings, info, update, setUpdate, navig
           </div>
           <label className="check" style={{ marginBottom: 8 }}>
             <input type="checkbox" checked={settings?.opencode?.autoApprove !== false} onChange={(e) => set({ opencode: { ...settings.opencode, autoApprove: e.target.checked } })} />
-            Aprobar permisos automaticamente (necesario para que La Fabrica cree ficheros)
+            Aprobar permisos automáticamente (necesario para que La Fábrica cree ficheros)
           </label>
           <label className="check" style={{ marginBottom: 8 }}>
             <input type="checkbox" checked={Boolean(settings?.opencode?.thinking)} onChange={(e) => set({ opencode: { ...settings.opencode, thinking: e.target.checked } })} />
@@ -267,7 +267,7 @@ export default function Configuracion({ settings, info, update, setUpdate, navig
       )}
 
       {tab === 'comercial' && (
-        <Card icon="💼" title="Clientes y presupuestos" subtitle="Parametros economicos y de localizacion">
+        <Card icon="💼" title="Clientes y presupuestos" subtitle="Parametros economicos y de localización">
           <div className="grid grid-3">
             <Field label="IVA (%)"><input type="number" value={settings?.quote?.ivaRate ?? 21} onChange={(e) => set({ quote: { ...settings.quote, ivaRate: Number(e.target.value) } })} /></Field>
             <Field label="IRPF (%)"><input type="number" value={settings?.quote?.irpfRate ?? 15} onChange={(e) => set({ quote: { ...settings.quote, irpfRate: Number(e.target.value) } })} /></Field>
@@ -290,8 +290,8 @@ export default function Configuracion({ settings, info, update, setUpdate, navig
 
       {tab === 'github' && (
         <div className="stack">
-          <Card icon="🐙" title="Repositorio de GitHub" subtitle="Publicacion de proyectos, releases y autoactualizacion"
-            actions={github && <span className={`chip ${github.ok ? 'success' : 'danger'}`}>{github.ok ? 'conectado' : 'sin conexion'}</span>}>
+          <Card icon="🐙" title="Repositorio de GitHub" subtitle="Publicación de proyectos, releases y autoactualización"
+            actions={github && <span className={`chip ${github.ok ? 'success' : 'danger'}`}>{github.ok ? 'conectado' : 'sin conexión'}</span>}>
             <div className="grid grid-2">
               <Field label="Usuario"><input type="text" value={settings?.github?.user || ''} onChange={(e) => set({ github: { ...settings.github, user: e.target.value } })} /></Field>
               <Field label="Repositorio"><input type="text" value={settings?.github?.repo || ''} onChange={(e) => set({ github: { ...settings.github, repo: e.target.value } })} /></Field>
@@ -304,12 +304,12 @@ export default function Configuracion({ settings, info, update, setUpdate, navig
               <button className="btn sm" onClick={() => api.openExternal(settings?.github?.url)}>🔗 Abrir repositorio</button>
               <button className="btn sm" onClick={async () => { const u = await api.github.user(); push(u.ok ? `Conectado como ${u.login}` : u.error, u.ok ? 'success' : 'error'); }}>🧪 Verificar token</button>
               <div className="spacer" />
-              {github?.ok && <span className="small muted">★ {github.stars} · {github.private ? 'privado' : 'publico'} · rama {github.defaultBranch}</span>}
+              {github?.ok && <span className="small muted">★ {github.stars} · {github.private ? 'privado' : 'público'} · rama {github.defaultBranch}</span>}
             </div>
           </Card>
 
-          <Card icon="🏷️" title="Releases" subtitle="Se usan para las actualizaciones automaticas">
-            {releases.length === 0 ? <Empty icon="🏷️" title="Sin releases" text="Publica una release con el paquete .deb para que los usuarios puedan actualizar." /> : (
+          <Card icon="🏷️" title="Releases" subtitle="Se usan para las actualizaciones automáticas">
+            {releases.length === 0 ? <Empty icon="🏷️" title="Sin releases" text="Pública una release con el paquete .deb para que los usuarios puedan actualizar." /> : (
               <div className="table-wrap">
                 <table className="data">
                   <thead><tr><th>Tag</th><th>Nombre</th><th>Fecha</th><th>Assets</th><th /></tr></thead>
@@ -361,13 +361,13 @@ export default function Configuracion({ settings, info, update, setUpdate, navig
           <div className="divider" />
           <label className="check">
             <input type="checkbox" checked={settings?.updates?.checkOnStart !== false} onChange={(e) => set({ updates: { ...settings.updates, checkOnStart: e.target.checked } })} />
-            Buscar actualizaciones al iniciar la aplicacion
+            Buscar actualizaciones al iniciar la aplicación
           </label>
         </Card>
       )}
 
       {tab === 'avanzado' && (
-        <Card icon="🧪" title="Avanzado" subtitle="Mantenimiento y datos de la aplicacion">
+        <Card icon="🧪" title="Avanzado" subtitle="Mantenimiento y datos de la aplicación">
           <div className="row">
             <button className="btn sm" onClick={() => api.settings.openFolder('config')}>📂 Ajustes</button>
             <button className="btn sm" onClick={() => api.settings.openFolder('data')}>📂 Datos</button>
@@ -420,7 +420,7 @@ function UpdateButtons({ update, push, onDone }) {
       <button className="btn primary" onClick={descargar} disabled={!update.available || estado === 'descargando' || estado === 'instalando'}>
         {estado === 'idle' ? '⬇️ Actualizar ahora' : estado === 'descargando' ? 'Descargando…' : estado === 'instalando' ? 'Instalando…' : 'Reintentar'}
       </button>
-      <button className="btn" onClick={() => api.update.relaunch()}>↻ Reiniciar aplicacion</button>
+      <button className="btn" onClick={() => api.update.relaunch()}>↻ Reiniciar aplicación</button>
       {prog?.percent != null && (
         <div style={{ minWidth: 220 }}>
           <div className="meter"><span style={{ width: `${prog.percent}%` }} /></div>

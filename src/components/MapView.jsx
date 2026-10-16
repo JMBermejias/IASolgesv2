@@ -120,7 +120,7 @@ export default function MapView({
           ))}
 
           <Marker position={punto} icon={iconOsc}>
-            <Popup>Centro de busqueda</Popup>
+            <Popup>Centro de búsqueda</Popup>
           </Marker>
         </MapContainer>
       </div>
@@ -129,7 +129,7 @@ export default function MapView({
         <span style={{ color: '#15803d' }}>● alta</span>{' '}
         <span style={{ color: '#ca8a04' }}>● media</span>{' '}
         <span style={{ color: '#b91c1c' }}>● baja</span>
-        <div className="tiny muted">Radio de analisis: {radiusKm} km · {clientes.length} negocios</div>
+        <div className="tiny muted">Radio de análisis: {radiusKm} km · {clientes.length} negocios</div>
       </div>
     </div>
   );

@@ -2,12 +2,12 @@ import React from 'react';
 
 const NAV = [
   { id: 'inicio', label: 'Inicio', icon: '🏠', group: 'Principal' },
-  { id: 'localizacion', label: 'Localizacion de clientes', icon: '📍', group: 'Comercial' },
+  { id: 'localización', label: 'Localización de clientes', icon: '📍', group: 'Comercial' },
   { id: 'presupuestos', label: 'Presupuestos', icon: '📄', group: 'Comercial' },
-  { id: 'fabrica', label: 'La Fabrica', icon: '🏭', group: 'Produccion' },
-  { id: 'legal', label: 'Analisis legal', icon: '⚖️', group: 'Produccion' },
+  { id: 'fabrica', label: 'La Fábrica', icon: '🏭', group: 'Producción' },
+  { id: 'legal', label: 'Análisis legal', icon: '⚖️', group: 'Producción' },
   { id: 'terminal', label: 'Terminal IA', icon: '⬛', group: 'Herramientas' },
-  { id: 'configuracion', label: 'Configuracion', icon: '⚙️', group: 'Herramientas' },
+  { id: 'configuración', label: 'Configuración', icon: '⚙️', group: 'Herramientas' },
   { id: 'credenciales', label: 'Credenciales', icon: '🔑', group: 'Herramientas' }
 ];
 
@@ -51,7 +51,7 @@ export default function Sidebar({ route, collapsed, settings, onNavigate }) {
       </nav>
 
       <div className="sidebar-foot">
-        <button className="nav-item" onClick={exit} title="Salir de la aplicacion" style={{ color: 'var(--danger)' }}>
+        <button className="nav-item" onClick={exit} title="Salir de la aplicación" style={{ color: 'var(--danger)' }}>
           <span className="ico" style={{ color: 'var(--danger)' }}>⏻</span>
           <span className="label">Salir</span>
         </button>

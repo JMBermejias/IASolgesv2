@@ -12,7 +12,7 @@ const OVERPASS = [
   'https://overpass.mail.ru/api/interpreter'
 ];
 
-/** Catalogo de sectores soportados con sus etiquetas OSM */
+/** Catálogo de sectores soportados con sus etiquetas OSM */
 const CATEGORIES = [
   { id: 'restaurantes', label: 'Restaurantes y hostelería', tags: { amenity: ['restaurant', 'cafe', 'bar', 'pub', 'fast_food'] } },
   { id: 'comercios', label: 'Comercios y retail', tags: { shop: ['*'] } },
@@ -25,7 +25,24 @@ const CATEGORIES = [
   { id: 'deporte', label: 'Deporte y ocio', tags: { leisure: ['*'], sport: ['*'] } },
   { id: 'logistica', label: 'Logística e industria', tags: { industrial: ['*'], office: ['logistics', 'company'] } },
   { id: 'agencias', label: 'Agencias y viajes', tags: { shop: ['travel_agent', 'bank', 'insurance'] } },
+  { id: 'pequenas', label: '🏪 Pequeñas empresas y autónomos', tags: { craft: ['*'], office: ['*'], healthcare: ['*'], service: ['*'] } },
   { id: 'todos', label: 'Todos los sectores', tags: { '*': ['*'] } }
+];
+
+/**
+ * Etiquetas adicionales de pequeños negocios y autónomos profesionales.
+ * Se añaden a CUALQUIER búsqueda (si el usuario lo activa) para que no se queden
+ * fuera negocios pequeños que no usan las etiquetas del sector buscado.
+ */
+const ETIQUETAS_PEQUENOS = [
+  { shop: ['*'] },
+  { craft: ['*'] },
+  { office: ['*'] },
+  { healthcare: ['*'] },
+  { service: ['*'] },
+  { 'man_made': ['*'] },
+  { amenity: ['*'] },
+  { building: ['commercial', 'retail', 'office', 'service', 'craft'] }
 ];
 
 function categoryById(id) {
@@ -95,10 +112,32 @@ async function reverse(lat, lon) {
   }
 }
 
-function buildOverpassQuery(cat, lat, lon, radiusKm, limit) {
+/**
+ * Construye la consulta de Overpass.
+ * `pool` es el numero de elementos que se piden al servidor (mas越大 que el limite
+ * final, para tener margen y poder quedarse con los MAS CERCANOS tras ordenar,
+ * en lugar de los que el servidor entregue por azar).
+ * `incluirPequenos` añade las etiquetas de pequeños negocios y autónomos.
+ */
+function buildOverpassQuery(cat, lat, lon, radiusKm, pool, incluirPequenos = false) {
   const radius = Math.max(100, Math.round(radiusKm * 1000)); // Overpass trabaja en metros
   const clauses = [];
-  for (const [key, values] of Object.entries(cat.tags)) {
+  const tags = { ...cat.tags };
+
+  if (incluirPequenos) {
+    for (const extra of ETIQUETAS_PEQUENOS) {
+      for (const [k, v] of Object.entries(extra)) {
+        if (!tags[k]) tags[k] = v.includes('*') ? ['*'] : [...(tags[k] || []), ...v];
+      }
+    }
+  }
+
+  const vistos = new Set();
+  for (const [key, values] of Object.entries(tags)) {
+    const firma = `${key}:${values.join('|')}`;
+    if (vistos.has(firma)) continue;
+    vistos.add(firma);
+
     if (key === '*') {
       // cualquier elemento con nombre propio
       clauses.push(`  node["name"](around:${radius},${lat},${lon});`);
@@ -113,9 +152,10 @@ function buildOverpassQuery(cat, lat, lon, radiusKm, limit) {
       const re = `^(${values.map((v) => v.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('|')})$`;
       clauses.push(`  node["${key}"~"${re}"](around:${radius},${lat},${lon});`);
       clauses.push(`  way["${key}"~"${re}"](around:${radius},${lat},${lon});`);
+      clauses.push(`  relation["${key}"~"${re}"](around:${radius},${lat},${lon});`);
     }
   }
-  return `[out:json][timeout:30];(\n${clauses.join('\n')}\n);out center ${limit};`;
+  return `[out:json][timeout:90];(\n${clauses.join('\n')}\n);out center ${pool};`;
 }
 
 async function overpass(query, maxEndpoints = OVERPASS.length) {
@@ -211,7 +251,7 @@ function labelFromTags(tags = {}, type) {
   const city = tags['addr:city'] || tags['addr:town'] || tags['addr:village'] || '';
   const postcode = tags['addr:postcode'] || '';
   const composed = [street && `${street} ${number}`.trim(), postcode, city].filter(Boolean).join(', ');
-  return composed || (type ? type.replace(/_/g, ' ') : 'Sin direccion');
+  return composed || (type ? type.replace(/_/g, ' ') : 'Sin dirección');
 }
 
 /**
@@ -252,11 +292,11 @@ function analyseClient(poi, ctx) {
   const densidad = Math.round(Math.min(100, (totalFound / Math.max(1, (radius * 2))) * 100));
 
   const opciones = [
-    { medio: 'Cercania geografica', porcentaje: proximity, detalle: `${dist.toFixed(2)} km del centro de busqueda (radio ${radius} km)` },
+    { medio: 'Cercanía geográfica', porcentaje: proximity, detalle: `${dist.toFixed(2)} km del centro de búsqueda (radio ${radius} km)` },
     { medio: 'Encaje del sector', porcentaje: sector, detalle: tags.shop || tags.amenity || tags.craft || tags.office || tags.leisure || 'actividad general' },
-    { medio: 'Presencia digital actual', porcentaje: digital, detalle: `${digitalSignals}/4 contactos publicos detectados` },
+    { medio: 'Presencia digital actual', porcentaje: digital, detalle: `${digitalSignals}/4 contactos públicos detectados` },
     { medio: 'Oportunidad de digitalizacion', porcentaje: oportunidadDigital, detalle: `${100 - digital}% de superficie de mejora detectada` },
-    { medio: 'Capacidad de inversion', porcentaje: senal, detalle: tags.brand ? `marca registrada: ${tags.brand}` : 'comercio independiente' },
+    { medio: 'Capacidad de inversión', porcentaje: senal, detalle: tags.brand ? `marca registrada: ${tags.brand}` : 'comercio independiente' },
     { medio: 'Densidad de mercado', porcentaje: densidad, detalle: `${totalFound} negocios en el area analizada` }
   ];
 
@@ -307,29 +347,37 @@ async function refineCenter(center, query) {
   }
 }
 
-/** Busqueda completa de clientes potenciales alrededor de un punto */
-async function search({ query, lat, lon, radius = 5, category = 'todos', limit }) {
-  // Cantidad maxima de clientes solicitada por el usuario (10 a 300)
+/**
+ * Búsqueda completa de clientes potenciales alrededor de un punto.
+ * Devuelve hasta `limit` clientes, priorizando los más cercanos e incluyendo
+ * pequeños negocios y autónomos (en OSM aparecen con etiquetas muy diversas).
+ */
+async function search({ query, lat, lon, radius = 5, category = 'todos', limit, incluirPequenos = true }) {
+  // Cantidad máxima de clientes solicitada por el usuario (10 a 300)
   const maxClientes = Math.min(300, Math.max(10, parseInt(limit, 10) || 60));
+  // Se piden más elementos de los que se van a mostrar, para poder ordenar por
+  // cercanía y descartar duplicados. Sin esto el servidor devuelve los que le salen
+  // y solo aparecen los negocios más conocidos.
+  const pool = Math.min(800, Math.max(maxClientes * 2, maxClientes + 40));
   let center = { lat, lon, label: query || 'Punto seleccionado' };
   let candidatos = [];
   if (query && (lat === undefined || lon === undefined)) {
     candidatos = await geocode(query);
-    if (!candidatos.length) throw new Error(`No se ha encontrado la ubicacion "${query}"`);
+    if (!candidatos.length) throw new Error(`No se ha encontrado la ubicación "${query}"`);
     const prioridad = { city: 0, town: 1, village: 2, municipality: 3, borough: 4, suburb: 5, quarter: 6, neighbourhood: 7, hamlet: 8, isolated_dwelling: 9, farm: 10 };
     const mejor = [...candidatos].sort((a, b) => (prioridad[a.type] ?? 11) - (prioridad[b.type] ?? 11))[0];
     center = await refineCenter({ lat: mejor.lat, lon: mejor.lon, label: mejor.label }, query);
   }
   const cat = categoryById(category);
-  const queryOsm = buildOverpassQuery(cat, center.lat, center.lon, radius, maxClientes);
+  const queryOsm = buildOverpassQuery(cat, center.lat, center.lon, radius, pool, incluirPequenos);
   let raw;
   let motor = 'overpass';
   if (process.env.IASOLGES_DEBUG) console.log(`[overpass] consulta:\n${queryOsm}`);
   try {
     raw = await overpass(queryOsm);
     if (!raw.elements.length && category !== 'todos') {
-      // sin resultados en el radio: ampliamos automaticamente una vez
-      raw = await overpass(buildOverpassQuery(cat, center.lat, center.lon, Math.min(radius * 2.5, 40), maxClientes));
+      // sin resultados en el radio: ampliamos automáticamente una vez
+      raw = await overpass(buildOverpassQuery(cat, center.lat, center.lon, Math.min(radius * 2.5, 40), pool, incluirPequenos));
     }
   } catch (e) {
     motor = 'nominatim';
@@ -337,7 +385,7 @@ async function search({ query, lat, lon, radius = 5, category = 'todos', limit }
       const elements = await nominatimPois({ center, category, limit: maxClientes });
       raw = { elements };
     } catch (e2) {
-      throw new Error(`No se han podido obtener datos de localizacion: ${e2.message} (Overpass: ${e.message})`);
+      throw new Error(`No se han podido obtener datos de localización: ${e2.message} (Overpass: ${e.message})`);
     }
   }
 
@@ -345,24 +393,37 @@ async function search({ query, lat, lon, radius = 5, category = 'todos', limit }
     const lat2 = el.lat ?? el.center?.lat;
     const lon2 = el.lon ?? el.center?.lon;
     return { ...el, lat: lat2, lon: lon2 };
-  }).filter((el) => typeof el.lat === 'number' && typeof el.lon === 'number');
+  }).filter((el) => typeof el.lat === 'number' && typeof el.lon === 'number'
+    && (el.tags?.name || el.tags?.brand || el.tags?.operator));
 
   elements.forEach((el) => { el.distanceKm = haversine(center, { lat: el.lat, lon: el.lon }); });
-  elements.sort((a, b) => a.distanceKm - b.distanceKm);
 
-  const clientes = elements.slice(0, maxClientes).map((el, i) =>
-    analyseClient(el, { radius, center, totalFound: elements.length, index: i })
+  // Orden por cercanía y eliminación de duplicados (mismo nombre en el mismo punto)
+  elements.sort((a, b) => a.distanceKm - b.distanceKm);
+  const sinDuplicados = [];
+  const firmas = new Set();
+  for (const el of elements) {
+    const nombre = (el.tags?.name || el.tags?.brand || el.tags?.operator || '').toLowerCase().trim();
+    const firma = `${nombre}|${el.lat.toFixed(4)}|${el.lon.toFixed(4)}`;
+    if (firmas.has(firma)) continue;
+    firmas.add(firma);
+    sinDuplicados.push(el);
+  }
+
+  const clientes = sinDuplicados.slice(0, maxClientes).map((el, i) =>
+    analyseClient(el, { radius, center, totalFound: sinDuplicados.length, index: i })
   );
 
   return {
     center,
     candidatos,
     categoria: { id: cat.id, label: cat.label },
-    total: elements.length,
+    total: sinDuplicados.length,
     radio: radius,
     motor,
     limite: maxClientes,
-    truncado: elements.length > maxClientes,
+    incluidosPequenos: Boolean(incluirPequenos),
+    truncado: sinDuplicados.length > maxClientes,
     clientes
   };
 }

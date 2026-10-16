@@ -8,7 +8,7 @@ const DEFAULT_CENTER = { lat: 38.4805, lon: -0.8033, label: 'Novelda, Alicante' 
 export default function Localizacion({ settings, navigate, id }) {
   const { push } = useToast();
   const [categorias, setCategorias] = useState([]);
-  const [form, setForm] = useState({ query: 'Novelda, Alicante', category: 'todos', radius: 3, limit: 60 });
+  const [form, setForm] = useState({ query: 'Novelda, Alicante', category: 'todos', radius: 3, limit: 60, incluirPequenos: true });
   const [center, setCenter] = useState(DEFAULT_CENTER);
   const [resultado, setResultado] = useState(null);
   const [buscando, setBuscando] = useState(false);
@@ -43,8 +43,8 @@ export default function Localizacion({ settings, navigate, id }) {
       setCenter(r.center);
       setSel([]);
       push(r.truncado
-        ? `${r.clientes.length} clientes de ${r.total} encontrados (maximo configurado: ${r.limite})`
-        : `${r.total} negocios analizados en ${r.categoria.label}`, 'success');
+        ? `${r.clientes.length} clientes de ${r.total} encontrados (máximo configurado: ${r.limite})`
+        : `${r.clientes.length} negocios analizados en ${r.categoria.label}`, 'success');
     } catch (e) {
       push(e.message, 'error', 7000);
     } finally {
@@ -74,7 +74,7 @@ export default function Localizacion({ settings, navigate, id }) {
   };
 
   const analizarIA = async () => {
-    if (!resultado?.clientes.length) return push('Realiza primero una busqueda', 'warning');
+    if (!resultado?.clientes.length) return push('Realiza primero una búsqueda', 'warning');
     setAnalizando(true);
     try {
       const prompt = await api.customers.analysisPrompt({ resultado, objetivo, servicio: form.category });
@@ -104,9 +104,9 @@ export default function Localizacion({ settings, navigate, id }) {
     <div className="stack">
       <BackHome extra={<span className="chip primary">{sel.length} seleccionados</span>} />
 
-      <Card icon="🎯" title="Buscador de clientes en el mapa" subtitle="Localiza negocios reales de OpenStreetMap y calcula la probabilidad de contratacion por medios de analisis">
+      <Card icon="🎯" title="Buscador de clientes en el mapa" subtitle="Localiza negocios reales de OpenStreetMap y calcula la probabilidad de contratacion por medios de análisis">
         <div className="grid" style={{ gridTemplateColumns: 'minmax(200px, 2fr) minmax(150px, 1fr) minmax(180px, 1fr) 282px auto', gap: 12, alignItems: 'end' }}>
-          <Field label="Ubicacion, direccion o negocio">
+          <Field label="Ubicación, dirección o negocio">
             <input type="text" value={form.query} placeholder="Ej. Benidorm, Alicante o Calle Mayor 1"
               onChange={(e) => setForm({ ...form, query: e.target.value })}
               onKeyDown={(e) => e.key === 'Enter' && buscar()} />
@@ -116,13 +116,13 @@ export default function Localizacion({ settings, navigate, id }) {
               {categorias.map((c) => <option key={c.id} value={c.id}>{c.label}</option>)}
             </select>
           </Field>
-          <Field label={`Radio de analisis: ${form.radius} km`}>
+          <Field label={`Radio de análisis: ${form.radius} km`}>
             <input type="range" min="1" max="25" step="1" value={form.radius}
               onChange={(e) => setForm({ ...form, radius: Number(e.target.value) })} />
           </Field>
-          <Field label={`Maximo de clientes: ${form.limit}`}>
+          <Field label={`Máximo de clientes: ${form.limit}`}>
             <div className="row row-tight" style={{ flexWrap: 'nowrap' }}>
-              <input type="number" min="10" max="300" step="5" value={form.limit} title="De 10 a 300 clientes por busqueda"
+              <input type="number" min="10" max="300" step="5" value={form.limit} title="De 10 a 300 clientes por búsqueda"
                 style={{ width: 78, flex: '0 0 78px' }}
                 onChange={(e) => setForm({ ...form, limit: Math.min(300, Math.max(10, Number(e.target.value) || 10)) })}
                 onKeyDown={(e) => e.key === 'Enter' && buscar()} />
@@ -139,10 +139,15 @@ export default function Localizacion({ settings, navigate, id }) {
           </div>
         </div>
         <div className="row" style={{ marginTop: 4 }}>
-          <input type="text" value={objetivo} placeholder="Objetivo comercial para el analisis IA (Ej.: vender webs a Businesses sin presencia digital)"
+          <label className="check nowrap" title="Añade comercios, talleres, profesiones y autónomos con cualquier tipo de etiqueta">
+            <input type="checkbox" checked={form.incluirPequenos}
+              onChange={(e) => setForm({ ...form, incluirPequenos: e.target.checked })} />
+            🏪 Incluir pequeñas empresas y autónomos
+          </label>
+          <input type="text" value={objetivo} placeholder="Objetivo comercial para el análisis IA (Ej.: vender webs a negocios sin presencia digital)"
             onChange={(e) => setObjetivo(e.target.value)} style={{ flex: 1 }} />
           <span className="tiny muted">
-            Mapas y datos: OpenStreetMap + Nominatim + Overpass. Puedes hacer <b>clic en el mapa</b> para mover el centro de busqueda.
+            Mapas y datos: OpenStreetMap + Nominatim + Overpass. Puedes hacer <b>clic en el mapa</b> para mover el centro de búsqueda.
           </span>
         </div>
       </Card>
@@ -166,11 +171,11 @@ export default function Localizacion({ settings, navigate, id }) {
         <>
           <div className="split" style={{ gridTemplateColumns: '1fr 430px' }}>
             <Card bodyClass="tight" title={`Mapa · ${resultado.clientes.length} resultados`} icon="🗺️"
-              subtitle={`${resultado.center.label}${resultado.truncado ? ` · mostrando el maximo configurado (${resultado.limite}) de ${resultado.total} negocios` : ''}`}
+              subtitle={`${resultado.center.label}${resultado.incluidosPequenos ? ' · incluye pequeñas empresas y autónomos' : ''}${resultado.truncado ? ` · mostrando el máximo configurado (${resultado.limite}) de ${resultado.total} negocios` : ''}`}
               actions={
                 <>
                   <button className="btn sm" onClick={analizarIA} disabled={analizando}>
-                    {analizando ? <span className="spinner" /> : '🤖'} Analisis IA
+                    {analizando ? <span className="spinner" /> : '🤖'} Análisis IA
                   </button>
                   <button className="btn sm" onClick={guardar}>💾 Guardar ({sel.length})</button>
                   <button className="btn primary sm" onClick={irAPresupuesto}>📄 Presupuestar</button>
@@ -196,11 +201,11 @@ export default function Localizacion({ settings, navigate, id }) {
 
             <Card bodyClass="tight" title="Listado de posibles clientes" icon="🏪"
               actions={<button className="btn sm ghost" onClick={seleccionarTodos}>{sel.length === filtrados.length ? 'Quitar todo' : 'Seleccionar todo'}</button>}>
-              <input type="search" placeholder="Filtrar por nombre, sector o direccion" value={filtro}
+              <input type="search" placeholder="Filtrar por nombre, sector o dirección" value={filtro}
                 onChange={(e) => setFiltro(e.target.value)} style={{ marginBottom: 8 }} />
               <div className="client-list">
                 {filtrados.length === 0 && (
-                  <Empty icon="🔍" title="Sin resultados" text="Amplia el radio, sube el maximo de clientes o cambia el sector." />
+                  <Empty icon="🔍" title="Sin resultados" text="Amplia el radio, sube el máximo de clientes o cambia el sector." />
                 )}
                 {filtrados.map((c) => (
                   <div key={c.id} className={`client-row ${sel.find((s) => s.id === c.id) ? 'selected' : ''}`} onClick={() => toggle(c)}>
@@ -218,7 +223,7 @@ export default function Localizacion({ settings, navigate, id }) {
                       <div className="prob" style={{ color: c.probabilidad >= 70 ? 'var(--success)' : c.probabilidad >= 45 ? 'var(--warning)' : 'var(--danger)' }}>
                         {c.probabilidad}%
                       </div>
-                      <button className="btn ghost sm tiny" onClick={(e) => { e.stopPropagation(); setDetalle(c); }}>analisis</button>
+                      <button className="btn ghost sm tiny" onClick={(e) => { e.stopPropagation(); setDetalle(c); }}>análisis</button>
                     </div>
                   </div>
                 ))}
@@ -227,7 +232,7 @@ export default function Localizacion({ settings, navigate, id }) {
           </div>
 
           {analisis && (
-            <Card icon="🤖" title="Analisis comercial con IA" subtitle="Segmentacion, priorizacion y estrategia de venta">
+            <Card icon="🤖" title="Análisis comercial con IA" subtitle="Segmentacion, priorizacion y estrategia de venta">
               {analisis.resumen && <p className="soft">{analisis.resumen}</p>}
               <div className="grid grid-2">
                 {(analisis.segmentos || []).map((s, i) => (
@@ -281,7 +286,7 @@ export default function Localizacion({ settings, navigate, id }) {
               <div className="table-wrap">
                 <table className="data">
                   <thead>
-                    <tr><th>Cliente</th><th>Sector</th><th>Direccion</th><th>Contacto</th><th>Prob.</th><th>Estado</th><th /></tr>
+                    <tr><th>Cliente</th><th>Sector</th><th>Dirección</th><th>Contacto</th><th>Prob.</th><th>Estado</th><th /></tr>
                   </thead>
                   <tbody>
                     {guardados.map((c) => (
@@ -293,7 +298,7 @@ export default function Localizacion({ settings, navigate, id }) {
                         <td><b>{c.probabilidad}%</b></td>
                         <td><span className="chip">{c.estado}</span></td>
                         <td>
-                          <button className="btn sm ghost" title="Ver analisis" onClick={() => setDetalle(c)}>👁️</button>
+                          <button className="btn sm ghost" title="Ver análisis" onClick={() => setDetalle(c)}>👁️</button>
                           <button className="btn sm ghost" title="Eliminar" onClick={async () => {
                             await api.db.clientes.remove(c.id);
                             setGuardados((g) => g.filter((x) => x.id !== c.id));
@@ -312,12 +317,12 @@ export default function Localizacion({ settings, navigate, id }) {
       {!buscando && !resultado && (
         <Card>
           <Empty icon="📍" title="Busca clientes en el mapa"
-            text="Introduce una ubicacion y un sector. El sistema listara los negocios del area con sus datos de contacto y la probabilidad de contratacion segun distintos medios de analisis."
-            action={<button className="btn primary" onClick={buscar}>🔍 Empezar la busqueda</button>} />
+            text="Introduce una ubicación y un sector. El sistema listara los negocios del area con sus datos de contacto y la probabilidad de contratacion segun distintos medios de análisis."
+            action={<button className="btn primary" onClick={buscar}>🔍 Empezar la búsqueda</button>} />
         </Card>
       )}
 
-      <Modal open={Boolean(detalle)} title={`Analisis · ${detalle?.nombre || ''}`} onClose={() => setDetalle(null)} wide
+      <Modal open={Boolean(detalle)} title={`Análisis · ${detalle?.nombre || ''}`} onClose={() => setDetalle(null)} wide
         footer={<>
           <button className="btn" onClick={() => setDetalle(null)}>Cerrar</button>
           <button className="btn primary" onClick={() => { setDetalle(null); irAPresupuesto(); }}>Crear presupuesto con este cliente</button>
@@ -333,16 +338,16 @@ export default function Localizacion({ settings, navigate, id }) {
               <span className="chip info">Ticket estimado {eur(detalle.ticketEstimado)}</span>
             </div>
             <p className="soft">{detalle.direccion}</p>
-            <h3>Porcentaje por medio de analisis</h3>
+            <h3>Porcentaje por medio de análisis</h3>
             {detalle.opciones.map((o) => <BarRow key={o.medio} name={o.medio} value={o.porcentaje} />)}
             <div className="alert info">
               <div><b>Probabilidad global de contratacion: {detalle.probabilidad}%</b>
-                <div className="small">Se obtiene ponderando cercania (30%), encaje del sector (20%), oportunidad de digitalizacion (20%), capacidad de inversion (20%) y prioridad de la lista (10%).</div>
+                <div className="small">Se obtiene ponderando cercanía (30%), encaje del sector (20%), oportunidad de digitalizacion (20%), capacidad de inversión (20%) y prioridad de la lista (10%).</div>
               </div>
             </div>
             <h3>Datos de contacto</h3>
             <dl className="kv">
-              <dt>Telefono</dt><dd>{detalle.contacto?.phone || 'No disponible'}</dd>
+              <dt>Teléfono</dt><dd>{detalle.contacto?.phone || 'No disponible'}</dd>
               <dt>Web</dt><dd>{detalle.contacto?.website ? <a href={detalle.contacto.website} onClick={(e) => { e.preventDefault(); api.openExternal(detalle.contacto.website); }}>{detalle.contacto.website}</a> : 'Sin web (oportunidad)'}</dd>
               <dt>Email</dt><dd>{detalle.contacto?.email || 'No disponible'}</dd>
               <dt>Horario</dt><dd className="small">{detalle.contacto?.openingHours || 'No disponible'}</dd>

@@ -1,5 +1,5 @@
 /**
- * IASolges.v2 - La Fabrica: creacion de agentes, webs y aplicaciones con IA
+ * IASolges.v2 - La Fábrica: creacion de agentes, webs y aplicaciones con IA
  */
 const fs = require('fs');
 const path = require('path');
@@ -14,14 +14,61 @@ const { SERVICIOS } = require('./quotes');
 const TIPOS = [
   { id: 'web', label: 'Sitio web', icono: '🌐' },
   { id: 'tienda', label: 'Tienda online', icono: '🛒' },
-  { id: 'app-web', label: 'Aplicacion web', icono: '💻' },
-  { id: 'app-movil', label: 'Aplicacion movil', icono: '📱' },
+  { id: 'app-web', label: 'Aplicación web', icono: '💻' },
+  { id: 'app-movil', label: 'Aplicación móvil', icono: '📱' },
   { id: 'agente', label: 'Agente de IA', icono: '🤖' },
-  { id: 'automatizacion', label: 'Automatizacion', icono: '⚙️' },
+  { id: 'automatizacion', label: 'Automatización', icono: '⚙️' },
   { id: 'dashboard', label: 'Panel de control', icono: '📊' },
   { id: 'api', label: 'API / microservicio', icono: '🔌' },
-  { id: 'script', label: 'Script / herramienta', icono: '📜' }
+  { id: 'script', label: 'Script / herramienta', icono: '📜' },
+  { id: 'imagen', label: 'Imágenes e ilustraciones', icono: '🖼️' },
+  { id: 'render', label: 'Render 3D', icono: '🧊' },
+  { id: 'video', label: 'Vídeo y animación', icono: '🎬' },
+  { id: 'audio', label: 'Audio y música', icono: '🎧' }
 ];
+
+/** Instrucciones específicas de cada tipo de producto para el agente de IA */
+const INSTRUCCIONES_TIPO = {
+  imagen: `
+TRABAJO CREATIVO DE IMÁGENES (prioridad máxima):
+- Crea un estudio de generación de imágenes con IA totalmente integrado y funcional.
+- Motor: API de imágenes del proveedor elegido (gpt-image o dalle de OpenAI, Claude, Gemini Image,
+  flux via Replicate/fal.ai). Implementa el módulo \`ai/imagen\` con generarImagen(prompt, opciones),
+  variaciones, inpainting y upscale usando la clave del entorno.
+- Modo MOCK: sin clave de API genera una imagen local (SVG/PNG) para que la aplicación funcione.
+- Interfaz: galería, historial de generaciones, plantillas de prompts, estilos predefinidos,
+  comparador antes/después y exportación PNG/JPEG/WebP y descarga en lote.
+- Editor de prompts: sujeto, estilo, iluminación, encuadre, calidad y seed; traducción automática del
+  prompt al inglés con el proveedor de texto.
+- Guarda los parámetros usados en JSON para poder reproducir cada imagen y comprueba que no se usan
+  marcas ni personas reales.`,
+  render: `
+RENDER Y MODELADO 3D:
+- Crea un estudio de render 3D con IA integrado y funcional.
+- El usuario describe el espacio o producto y el modelo devuelve la escena en JSON (geometría,
+  materiales, cámara, iluminación y entorno).
+- Renderizador: three.js para previsualización interactiva en el navegador y Blender en modo headless
+  (blender --background --python render.py) cuando esté disponible, con alternativa three.js.
+- Materiales PBR, HDRI, sombras suaves, tone mapping ACES, calidad configurable y exportación a PNG de
+  alta resolución, OBJ, GLB y FBX.
+- Comparador de versiones de render, historial de escenas en JSON y galería de resultados.
+- Si no hay Blender, avisa claramente y ofrece el render three.js.`,
+  video: `
+VÍDEO Y ANIMACIÓN:
+- Crea un estudio de producción de vídeo con IA integrado y funcional.
+- Genera guion por escenas con timecodes (proveedor de texto), storyboard en imágenes (módulo de
+  imágenes) y voz con TTS (OpenAI TTS o ElevenLabs) cuando haya clave.
+- Monta el vídeo con MoviePy o FFmpeg: clips, transiciones, subtítulos SRT automáticos a partir del
+  guion, música con licencia verificada y marca de agua opcional.
+- Interfaz con línea de tiempo, vista previa y exportación MP4 (H.264) y WebM; modo MOCK que genera un
+  vídeo de prueba cuando no hay claves.
+- Genera títulos y descripciones para YouTube y redes sociales.`,
+  audio: `
+AUDIO Y MÚSICA:
+- Crea un estudio de audio con IA integrado y funcional.
+- Texto a voz con el proveedor configurado, limpieza de ruido, normalización y mezcla de pistas.
+- Generación de música y efectos con IA y exportación a WAV/MP3/OGG y a formatos para vídeo.`
+};
 
 function slugify(text) {
   return (text || 'proyecto')
@@ -49,28 +96,29 @@ function buildPrompt({ proyecto, presupuesto, cliente, servicios, requisitos, ti
   const serviciosTxt = servicios.map(s).filter(Boolean).join(', ') || 'los servicios seleccionados';
 
   const presupuestoTxt = presupuesto
-    ? `PRESUPUESTO APROBADO (referencia economica):
-- Numero: ${presupuesto.numero} · ${presupuesto.titulo}
+    ? `PRESUPUESTO APROBADO (referencia económica):
+- Número: ${presupuesto.numero} · ${presupuesto.titulo}
 - Plazo: ${presupuesto.plazo || 'a definir'} · Pago: ${presupuesto.formaPago || ''}
 - Partidas:
 ${presupuesto.partidas.map((p) => `  · ${p.concepto}: ${p.horas} h x ${p.precioHora} EUR/h = ${p.importe} EUR`).join('\n')}
 - Total: ${presupuesto.total} EUR`
-    : 'NO HAY PRESUPUESTO: el usuario ha pedido creacion libre. Aporta tu propio alcance tecnico.';
+    : 'NO HAY PRESUPUESTO: el usuario ha pedido creación libre. Aporta tu propio alcance técnico.';
 
   const clienteTxt = cliente
     ? `CLIENTE:
 - Nombre: ${cliente.nombre}
 - Sector: ${cliente.categoria}
-- Direccion: ${cliente.direccion}
+- Dirección: ${cliente.direccion}
 - Contacto: ${cliente.contacto?.phone || 'n/d'} · ${cliente.contacto?.website || 'sin web'} · ${cliente.contacto?.email || 'sin email'}`
     : 'CLIENTE: no indicado (proyecto libre).';
 
-  return `Trabaja como ingeniero de software senior yDiseñador de producto. Crea un proyecto COMPLETO, FUNCIONAL Y LISTO PARA PRODUCCION en el directorio actual.
+  return `Trabaja como ingeniero de software senior y diseñador de producto. Crea un proyecto COMPLETO, FUNCIONAL Y LISTO PARA Producción en el directorio actual.
 
 OBJETIVO DEL PROYECTO:
-${proyecto.descripcion || 'Aplicacion solicitada por el usuario'}
+${proyecto.descripcion || 'Aplicación solicitada por el usuario'}
 
 TIPO DE PRODUCTO: ${tipo}
+${INSTRUCCIONES_TIPO[tipo] || ''}
 
 ${clienteTxt}
 
@@ -82,16 +130,16 @@ REQUISITOS EXPRESOS DEL USUARIO:
 ${requisitos || 'Ninguno adicional'}
 
 REQUISITOS OBLIGATORIOS DEL PROYECTO:
-1. La aplicacion DEBE incluir INTELIGENCIA ARTIFICIAL integrada de principio a fin (no un simple placeholder).
-   - Implementa un modulo \`ai\` que soporte multiples proveedores (OpenAI, Anthropic, Google Gemini, OpenRouter, Groq, DeepSeek, Mistral, xAI) y tambien OpenCode.
-   - Las claves se leen de variables de entorno o de un fichero \`.env.example\` que debes crear (nunca las escribas en el codigo).
-   - Debe existir una configuracion por defecto razonable y un modo "mock" si no hay claves.
-2. Interfaz de usuario profesional, responsive y accesible (contraste AA, navegacion por teclado, foco visible).
-3. Validacion de entrada en servidor y cliente, gestion de errores y estados de carga.
+1. La aplicación DEBE incluir INTELIGENCIA ARTIFICIAL integrada de principio a fin (no un simple placeholder).
+   - Implementa un módulo \`ai\` que soporte múltiples proveedores (OpenAI, Anthropic, Google Gemini, OpenRouter, Groq, DeepSeek, Mistral, xAI) y también OpenCode.
+   - Las claves se leen de variables de entorno o de un fichero \`.env.example\` que debes crear (nunca las escribas en el código).
+   - Debe existir una configuración por defecto razonable y un modo "mock" si no hay claves.
+2. Interfaz de usuario profesional, responsive y accesible (contraste AA, navegación por teclado, foco visible).
+3. Validación de entrada en servidor y cliente, gestión de errores y estados de carga.
 4. Persistencia real (fichero JSON o SQLite) con esquema documentado.
-5. Documentacion: README.md con instalacion, uso, arquitectura y variables de entorno.
-6. Tests basicos (al menos un test por modulo principal) ejecutables con \`npm test\`.
-7. Codigo limpio, comentado en espanol, sin credenciales ni secretos.
+5. Documentación: README.md con instalación, uso, arquitectura y variables de entorno.
+6. Tests básicos (al menos un test por módulo principal) ejecutables con \`npm test\`.
+7. Código limpio, comentado en español, sin credenciales ni secretos.
 8. Variables de entorno de ejemplo y un script de arranque claro.
 
 ENTREGA ESPERADA:
@@ -100,7 +148,7 @@ ENTREGA ESPERADA:
 - Ejecuta las pruebas si es viable y corrige los errores.
 - Al finalizar imprime un resumen de lo creado.
 
-Empieza a trabajar ahora sin preguntar, de forma autonoma y completa.`;
+Empieza a trabajar ahora sin preguntar, de forma autónoma y completa.`;
 }
 
 async function create(args, streamTo) {
@@ -186,7 +234,7 @@ async function create(args, streamTo) {
 async function finish({ projectId, code, bus, dir, presupuesto, cliente, autoLegal, pushToGithub, provider, model, agent, buffer }) {
   if (buffer) db.update('proyectos', projectId, { log: [...(db.find('proyectos', projectId)?.log || []), { at: new Date().toISOString(), kind: 'out', text: buffer }] });
 
-  bus.emit('event', { projectId, kind: 'status', text: 'Ejecucion finalizada. Preparando proyecto...' });
+  bus.emit('event', { projectId, kind: 'status', text: 'Ejecución finalizada. Preparando proyecto...' });
 
   // Git init + primer commit
   let git = null;
@@ -273,4 +321,4 @@ function readFileSafe(file, maxBytes = 200000) {
   }
 }
 
-module.exports = { TIPOS, create, listTree, readFileSafe, buildPrompt, slugify };
+module.exports = { TIPOS, INSTRUCCIONES_TIPO, create, listTree, readFileSafe, buildPrompt, slugify };

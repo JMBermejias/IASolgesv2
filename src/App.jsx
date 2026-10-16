@@ -17,12 +17,12 @@ import Credenciales from './views/Credenciales.jsx';
 
 const VIEWS = {
   inicio: { title: 'Inicio', subtitle: 'Panel de control: trabajos, clientes y presupuestos' },
-  localizacion: { title: 'Localizacion de clientes', subtitle: 'Busca, analiza y selecciona clientes en el mapa' },
-  presupuestos: { title: 'Presupuestos', subtitle: 'Creacion automatica de presupuestos con IA' },
-  fabrica: { title: 'La Fabrica', subtitle: 'Creacion de agentes, webs y aplicaciones con IA' },
-  legal: { title: 'Analisis legal', subtitle: 'Auditoria legal y de cumplimiento' },
+  localizacion: { title: 'Localización de clientes', subtitle: 'Busca, analiza y selecciona clientes en el mapa' },
+  presupuestos: { title: 'Presupuestos', subtitle: 'Creación automática de presupuestos con IA' },
+  fabrica: { title: 'La Fábrica', subtitle: 'Creación de agentes, webs y aplicaciones con IA' },
+  legal: { title: 'Análisis legal', subtitle: 'Auditoría legal y de cumplimiento' },
   terminal: { title: 'Terminal IA', subtitle: 'Consola directa con el proveedor de inteligencia artificial' },
-  configuracion: { title: 'Configuracion', subtitle: 'Proveedores, modelos, temas y actualizaciones' },
+  configuracion: { title: 'Configuración', subtitle: 'Proveedores, modelos, temas y actualizaciones' },
   credenciales: { title: 'Credenciales', subtitle: 'Datos del titular, licencia MIT y acceso a GitHub' }
 };
 

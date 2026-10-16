@@ -31,7 +31,7 @@ export default function TerminalIA({ settings, info, navigate }) {
         else if (evt.type === 'status') feed(evt.message, 'status');
         else if (evt.type === 'error') feed(evt.message, 'error');
         else if (evt.type === 'log') feed(evt.text, 'warn');
-        else if (evt.type === 'session') setEstado(`Sesion ${evt.sessionId}`);
+        else if (evt.type === 'session') setEstado(`Sesión ${evt.sessionId}`);
       }
       if (evt.type === 'token' && evt.runId) {
         buffersRef.current[evt.runId] = (buffersRef.current[evt.runId] || '') + evt.text;
@@ -95,7 +95,7 @@ export default function TerminalIA({ settings, info, navigate }) {
               <button className={`btn sm ${modo === 'shell' ? 'primary' : ''}`} onClick={() => setModo('shell')}>⌨️ Shell del sistema</button>
               <div className="spacer" />
               <span className="chip static" title="Motor activo">{settings?.provider} · {modeloActual}</span>
-              <button className="btn sm ghost" onClick={() => navigate('configuracion', 'proveedores')}>⚙️ Cambiar modelo</button>
+              <button className="btn sm ghost" onClick={() => navigate('configuración', 'proveedores')}>⚙️ Cambiar modelo</button>
             </div>
           </Card>
 
@@ -136,7 +136,7 @@ export default function TerminalIA({ settings, info, navigate }) {
                 <span>·</span>
                 <span>Directorio: <span className="mono">{cwd || 'home'}</span></span>
                 <span className="spacer" />
-                <span>Ctrl+Enter envia · la IA trabaja con el motor y los modelos que elijas en Configuracion</span>
+                <span>Ctrl+Enter envia · la IA trabaja con el motor y los modelos que elijas en Configuración</span>
               </div>
             </Card>
           ) : (

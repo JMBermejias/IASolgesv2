@@ -20,7 +20,7 @@ export default function Credenciales({ info, settings, navigate }) {
 
   return (
     <div className="stack">
-      <BackHome extra={<button className="btn sm" onClick={() => navigate('configuracion', 'github')}>⚙️ Editar credenciales</button>} />
+      <BackHome extra={<button className="btn sm" onClick={() => navigate('configuración', 'github')}>⚙️ Editar credenciales</button>} />
 
       <Card icon="🔑" title="Credenciales del titular" subtitle="Datos del propietario y autor de IASolges.v2">
         <div className="grid grid-2">
@@ -29,7 +29,7 @@ export default function Credenciales({ info, settings, navigate }) {
               <div className="icon-badge" style={{ width: 46, height: 46, fontSize: 20 }}>JM</div>
               <div>
                 <div style={{ fontSize: 17, fontWeight: 700 }}>{t.nombre}</div>
-                <div className="small muted">Autor y titular de la aplicacion · Licencia MIT</div>
+                <div className="small muted">Autor y titular de la aplicación · Licencia MIT</div>
               </div>
             </div>
             <div className="divider" />
@@ -83,7 +83,7 @@ export default function Credenciales({ info, settings, navigate }) {
         </div>
       </Card>
 
-      <Card icon="🏷️" title="Aplicacion" icon2="">
+      <Card icon="🏷️" title="Aplicación" icon2="">
         <div className="grid grid-4">
           <div className="kpi" style={{ padding: 0 }}><div className="label">Version</div><div className="value">{info?.version}</div></div>
           <div className="kpi" style={{ padding: 0 }}><div className="label">Licencia</div><div className="value">MIT</div></div>

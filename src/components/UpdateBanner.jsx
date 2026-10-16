@@ -23,9 +23,9 @@ export default function UpdateBanner({ update, onClose, push }) {
       setState('installing');
       const res = await api.update.install(file.dest);
       if (res.ok) {
-        push('Actualizacion instalada. Reiniciando...', 'success');
+        push('Actualización instalada. Reiniciando...', 'success');
       } else {
-        push(`No se pudo instalar automaticamente: ${res.error}`, 'error', 9000);
+        push(`No se pudo instalar automáticamente: ${res.error}`, 'error', 9000);
         setState('error');
         setInfo({ ...info, error: res.error });
       }

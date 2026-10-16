@@ -8,19 +8,22 @@ const { getSettings } = require('./config');
 /** Catalogo de apartados/servicios que se pueden incluir en un presupuesto */
 const SERVICIOS = [
   { id: 'web', label: 'Sitio web corporativo', precioHora: 45, horasEstimadas: 40, icono: '🌐' },
-  { id: 'tienda', label: 'Tienda electronica (e-commerce)', precioHora: 50, horasEstimadas: 70, icono: '🛒' },
-  { id: 'app-web', label: 'Aplicacion web a medida', precioHora: 55, horasEstimadas: 120, icono: '💻' },
-  { id: 'app-movil', label: 'Aplicacion movil', precioHora: 60, horasEstimadas: 160, icono: '📱' },
+  { id: 'tienda', label: 'Tienda electrónica (e-commerce)', precioHora: 50, horasEstimadas: 70, icono: '🛒' },
+  { id: 'app-web', label: 'Aplicación web a medida', precioHora: 55, horasEstimadas: 120, icono: '💻' },
+  { id: 'app-movil', label: 'Aplicación móvil', precioHora: 60, horasEstimadas: 160, icono: '📱' },
   { id: 'agente-ia', label: 'Agente de IA / Asistente inteligente', precioHora: 65, horasEstimadas: 60, icono: '🤖' },
-  { id: 'automatizacion', label: 'Automatizacion de procesos', precioHora: 55, horasEstimadas: 50, icono: '⚙️' },
+  { id: 'automatizacion', label: 'Automatización de procesos', precioHora: 55, horasEstimadas: 50, icono: '⚙️' },
   { id: 'api', label: 'Integraciones y APIs', precioHora: 55, horasEstimadas: 35, icono: '🔌' },
   { id: 'seo', label: 'SEO y posicionamiento', precioHora: 40, horasEstimadas: 30, icono: '📈' },
   { id: 'imagen', label: 'Marca e identidad visual', precioHora: 45, horasEstimadas: 25, icono: '🎨' },
   { id: 'hosting', label: 'Hosting, dominio y despliegue', precioHora: 30, horasEstimadas: 8, icono: '☁️' },
   { id: 'mantenimiento', label: 'Mantenimiento mensual', precioHora: 40, horasEstimadas: 8, icono: '🛠️' },
-  { id: 'legal', label: 'Analisis legal y cumplimiento (RGPD/LSSI)', precioHora: 55, horasEstimadas: 14, icono: '⚖️' },
-  { id: 'analitica', label: 'Panel de analitica y control', precioHora: 50, horasEstimadas: 24, icono: '📊' },
-  { id: 'formacion', label: 'Formacion al equipo', precioHora: 35, horasEstimadas: 12, icono: '🎓' },
+  { id: 'legal', label: 'Análisis legal y cumplimiento (RGPD/LSSI)', precioHora: 55, horasEstimadas: 14, icono: '⚖️' },
+  { id: 'analitica', label: 'Panel de analítica y control', precioHora: 50, horasEstimadas: 24, icono: '📊' },
+  { id: 'formacion', label: 'Formación al equipo', precioHora: 35, horasEstimadas: 12, icono: '🎓' },
+  { id: 'imagenes', label: 'Imágenes e ilustraciones con IA', precioHora: 45, horasEstimadas: 25, icono: '🖼️' },
+  { id: 'render', label: 'Render 3D y modelado', precioHora: 55, horasEstimadas: 40, icono: '🧊' },
+  { id: 'video', label: 'Vídeo y animación', precioHora: 50, horasEstimadas: 45, icono: '🎬' },
   { id: 'pack', label: 'Paquete completo IA + Web + App', precioHora: 60, horasEstimadas: 220, icono: '🚀' }
 ];
 
@@ -39,7 +42,7 @@ function buildPrompt({ clientes, necesidades, servicios,Extra = '', contexto }) 
   const cfg = getSettings().quote || {};
   const detalleClientes = clientes.map((c) => ({
     nombre: c.nombre, sector: c.categoria, direccion: c.direccion,
-    web: c.contacto?.website || 'sin web', telefono: c.contacto?.phone || 'sin telefono',
+    web: c.contacto?.website || 'sin web', telefono: c.contacto?.phone || 'sin teléfono',
     probabilidad: c.probabilidad, prioridad: c.prioridad
   }));
   const detalleServicios = servicios.map((id) => {
@@ -47,7 +50,7 @@ function buildPrompt({ clientes, necesidades, servicios,Extra = '', contexto }) 
     return s ? `${s.label} (orientativo: ${s.horasEstimadas} h x ${s.precioHora} EUR/h)` : id;
   });
 
-  return `Eres un consultor tecnico-economico experto en proyectos de software, IA y marketing digital en Espana.
+  return `Eres un consultor técnico-económico experto en proyectos de software, IA y marketing digital en Espana.
 Debes generar un PRESUPUESTO PROFESIONAL, REALISTA Y CONCRETO para este cliente(s).
 
 DATOS DEL CLIENTE:
@@ -65,9 +68,9 @@ CONTEXTO ADICIONAL: ${contexto || 'Ninguno'}
 
 REGLAS:
 - Idioma: espanol de Espana, tono profesional y comercial.
-- Precios en euros (${cfg.currency || 'EUR'}), con IVA ${cfg.IVA || cfg.ivaRate || 21}% e IRPF ${cfg.IRPF || cfg.irpfRate || 15}% salvo autonomos.
+- Precios en euros (${cfg.currency || 'EUR'}), con IVA ${cfg.IVA || cfg.ivaRate || 21}% e IRPF ${cfg.IRPF || cfg.irpfRate || 15}% salvo autónomos.
 - Margen objetivo sobre coste: ${cfg.margen || cfg.marginRate || 25}%.
-- IMPORTANTE: entre 4 y 8 partidas, descripciones de 25 palabras como maximo y sin saltos de linea, para que quepa la respuesta completa.
+- IMPORTANTE: entre 4 y 8 partidas, descripción de 25 palabras como máximo y sin saltos de línea, para que quepa la respuesta completa.
 - Plazo estimado realista en semanas y garantia de trabajo.
 - Importes unitarios y totales coherentes (importe = horas x precio/hora).
 
@@ -76,9 +79,9 @@ Responde EXCLUSIVAMENTE con un JSON valido (sin texto antes ni despues):
   "titulo": "titulo comercial del presupuesto",
   "cliente": "nombre del cliente",
   "resumen": "resumen ejecutivo de lo que se va a hacer",
-  "solucion": "descripcion de la solucion tecnica propuesta en 3-5 frases",
+  "solución": "descripción de la solución técnica propuesta en 3-5 frases",
   "partidas": [
-    { "concepto": "...", "descripcion": "...", "servicio": "web|app-web|agente-ia|...", "horas": 0, "precioHora": 0, "importe": 0 }
+    { "concepto": "...", "descripción": "...", "servicio": "web|app-web|agente-ia|...", "horas": 0, "precioHora": 0, "importe": 0 }
   ],
   "descuento": { "concepto": "descuento por volumen o lanzamiento", "porcentaje": 0, "importe": 0 },
   "plazo": "8-10 semanas",

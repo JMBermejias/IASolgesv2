@@ -103,7 +103,7 @@ function install(debPath) {
     child.on('error', (e) => resolve({ ok: false, error: e.message, output: out }));
     child.on('close', (code) => {
       if (code === 0) resolve({ ok: true, output: out });
-      else resolve({ ok: false, error: `dpkg termino con codigo ${code}`, output: out });
+      else resolve({ ok: false, error: `dpkg termino con código ${code}`, output: out });
     });
   });
 }

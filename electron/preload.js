@@ -87,7 +87,7 @@ contextBridge.exposeInMainWorld('api', {
     export: (args) => invoke('quotes:export', args)
   },
 
-  /* Fabrica */
+  /* Fábrica */
   factory: {
     tipos: () => invoke('factory:tipos'),
     create: (args) => invoke('factory:create', args),

@@ -46,7 +46,7 @@ export default function Fabrica({ id, settings, navigate }) {
 
   useEffect(() => { cargar(); /* eslint-disable-next-line */ }, []);
 
-  /* Suscripcion unica a los eventos de La Fabrica */
+  /* Suscripcion unica a los eventos de La Fábrica */
   useEffect(() => {
     const off = api.factory.onEvent((evt) => {
       const h = handlersRef.current;
@@ -63,7 +63,7 @@ export default function Fabrica({ id, settings, navigate }) {
   }, [cargar, navigate, push]);
 
   const crear = async () => {
-    if (!form.nombre && !form.descripcion) return push('Indica un nombre o una descripcion del proyecto', 'warning');
+    if (!form.nombre && !form.descripcion) return push('Indica un nombre o una descripción del proyecto', 'warning');
     setCreando(true);
     if (feedRef.current) feedRef.current('', 'status');
     try {
@@ -100,13 +100,13 @@ export default function Fabrica({ id, settings, navigate }) {
     }
   };
 
-  if (loading) return <Loading text="Preparando La Fabrica..." />;
+  if (loading) return <Loading text="Preparando La Fábrica..." />;
 
   return (
     <div className="stack">
       <BackHome extra={<span className="chip primary">{proyectos.length} proyectos</span>} />
 
-      <Card icon="🏭" title="La Fabrica" subtitle="Crea agentes, webs, aplicaciones y cualquier proyecto que el cliente necesite. Siempre con inteligencia artificial integrada.">
+      <Card icon="🏭" title="La Fábrica" subtitle="Crea agentes, webs, aplicaciones y cualquier proyecto que el cliente necesite. Siempre con inteligencia artificial integrada.">
         <div className="grid grid-3">
           <div>
             <Field label="Nombre del proyecto" required>
@@ -123,15 +123,15 @@ export default function Fabrica({ id, settings, navigate }) {
               </div>
             </Field>
             <Field label="Que debe hacer" hint="Describe el producto con detalle: funciones, usuarios, pantallas, integraciones…">
-              <textarea rows={5} value={form.descripcion} placeholder="Ej. Tienda online para venta de miel con catalogo, carrito, pago con Stripe y panel de pedidos. Debe funcionar en movil."
+              <textarea rows={5} value={form.descripcion} placeholder="Ej. Tienda online para venta de miel con catalogo, carrito, pago con Stripe y panel de pedidos. Debe funcionar en móvil."
                 onChange={(e) => setForm({ ...form, descripcion: e.target.value })} />
             </Field>
           </div>
 
           <div>
-            <Field label="Basado en presupuesto" hint="Opcional: puedes crear sin presupuesto (creacion libre)">
+            <Field label="Basado en presupuesto" hint="Opcional: puedes crear sin presupuesto (creación libre)">
               <select value={form.presupuestoId} onChange={(e) => setForm({ ...form, presupuestoId: e.target.value })}>
-                <option value="">— Sin presupuesto (creacion libre) —</option>
+                <option value="">— Sin presupuesto (creación libre) —</option>
                 {presupuestos.map((p) => <option key={p.id} value={p.id}>{p.numero} · {p.cliente} · {eur(p.total, p.moneda)}</option>)}
               </select>
             </Field>
@@ -154,8 +154,8 @@ export default function Fabrica({ id, settings, navigate }) {
           </div>
 
           <div>
-            <Field label="Requisitos adicionales o tecnicas concretas">
-              <textarea rows={5} value={form.requisitos} placeholder="Ej. Node + React, PostgreSQL, integrar pasarela de pago Redsys, IA para generar descripciones de producto, desplegar como .deb"
+            <Field label="Requisitos adicionales o técnicas concretas">
+              <textarea rows={5} value={form.requisitos} placeholder="Ej. Node + React, PostgreSQL, integrar pasarela de pago Redsys, IA para generar descripción de producto, desplegar como .deb"
                 onChange={(e) => setForm({ ...form, requisitos: e.target.value })} />
             </Field>
             <label className="check" style={{ marginBottom: 8 }}>
@@ -186,9 +186,9 @@ export default function Fabrica({ id, settings, navigate }) {
       <Card
         icon="⬛"
         title="Area de trabajo (terminal en vivo)"
-        subtitle={creando ? 'Generando codigo en tiempo real…' : 'Aqui se muestra la salida de la IA mientras crea el proyecto'}
+        subtitle={creando ? 'Generando código en tiempo real…' : 'Aqui se muestra la salida de la IA mientras crea el proyecto'}
         bodyClass="tight"
-        actions={creando && <span className="chip warning pulse">en ejecucion</span>}
+        actions={creando && <span className="chip warning pulse">en ejecución</span>}
       >
         <div className="terminal-wrap" style={{ height: 380 }}>
           <XTerminal feed={(fn) => { feedRef.current = fn; return () => { feedRef.current = null; }; }} />
@@ -215,7 +215,7 @@ export default function Fabrica({ id, settings, navigate }) {
                 <div className="row row-tight" style={{ marginTop: 10 }}>
                   <button className="btn sm" onClick={() => verArbol(p)}>📂 Ver archivos</button>
                   <button className="btn sm" onClick={() => api.openPath(p.carpeta)}>📁 Abrir carpeta</button>
-                  {p.legalId && <button className="btn sm" onClick={() => navigate('legal', p.legalId)}>⚖️ Analisis legal</button>}
+                  {p.legalId && <button className="btn sm" onClick={() => navigate('legal', p.legalId)}>⚖️ Análisis legal</button>}
                   {p.github?.url && <button className="btn sm" onClick={() => api.openExternal(p.github.url)}>🐙 GitHub</button>}
                 </div>
               </div>

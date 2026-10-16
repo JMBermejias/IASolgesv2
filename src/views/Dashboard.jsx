@@ -60,14 +60,14 @@ export default function Dashboard({ settings, info, navigate }) {
           </p>
         </div>
         <div className="actions">
-          <button className="btn primary" onClick={() => navigate('localizacion')}>📍 Buscar clientes</button>
+          <button className="btn primary" onClick={() => navigate('localización')}>📍 Buscar clientes</button>
           <button className="btn" onClick={() => navigate('presupuestos')}>📄 Nuevo presupuesto</button>
-          <button className="btn" onClick={() => navigate('fabrica')}>🏭 Ir a La Fabrica</button>
+          <button className="btn" onClick={() => navigate('fabrica')}>🏭 Ir a La Fábrica</button>
         </div>
       </div>
 
       <div className="grid grid-4">
-        <Kpi icon="👥" label="Clientes" value={stats.clientes} delta={`${stats.oportunidades} sin presencia digital`} onClick={() => navigate('localizacion')} />
+        <Kpi icon="👥" label="Clientes" value={stats.clientes} delta={`${stats.oportunidades} sin presencia digital`} onClick={() => navigate('localización')} />
         <Kpi icon="📄" label="Presupuestos" value={stats.presupuestos} delta={`${stats.conversion}% de conversion`} onClick={() => navigate('presupuestos')} />
         <Kpi icon="💶" label="Cartera en juego" value={eur(stats.pipeline)} delta={`${eur(stats.facturado)} aceptados`} />
         <Kpi icon="🏭" label="Proyectos creados" value={stats.proyectos} delta={`${stats.trabajos} trabajos registrados`} onClick={() => navigate('fabrica')} />
@@ -77,9 +77,9 @@ export default function Dashboard({ settings, info, navigate }) {
         <Card title="Trabajos recientes" icon="🗂️" subtitle="Enlaces directos a cada trabajo" bodyClass="tight"
           actions={<button className="btn sm ghost" onClick={() => navigate('fabrica')}>Ver todos</button>}>
           {recientes.length === 0 ? (
-            <Empty icon="🗂️" title="Todavia no hay trabajos" text="Crea tu primer presupuesto o proyecto desde La Fabrica." />
+            <Empty icon="🗂️" title="Todavia no hay trabajos" text="Crea tu primer presupuesto o proyecto desde La Fábrica." />
           ) : recientes.map((t) => (
-            <div key={t.id} className="link-row" onClick={() => navigate(t.tipo === 'creacion' ? 'fabrica' : t.tipo === 'legal' ? 'legal' : 'presupuestos', t.id)}>
+            <div key={t.id} className="link-row" onClick={() => navigate(t.tipo === 'creación' ? 'fabrica' : t.tipo === 'legal' ? 'legal' : 'presupuestos', t.id)}>
               <div className="ico">{t.tipo === 'creacion' ? '🏭' : t.tipo === 'legal' ? '⚖️' : '📄'}</div>
               <div style={{ flex: 1, minWidth: 0 }}>
                 <div className="name truncate">{t.titulo}</div>
@@ -91,11 +91,11 @@ export default function Dashboard({ settings, info, navigate }) {
         </Card>
 
         <Card title="Clientes destacados" icon="⭐" subtitle="Mayor probabilidad de contratacion"
-          actions={<button className="btn sm ghost" onClick={() => navigate('localizacion')}>Ver todos</button>}>
+          actions={<button className="btn sm ghost" onClick={() => navigate('localización')}>Ver todos</button>}>
           {[...data.clientes].sort((a, b) => (b.probabilidad || 0) - (a.probabilidad || 0)).slice(0, 8).length === 0 ? (
             <Empty icon="📍" title="Sin clientes" text="Localiza clientes potenciales en el mapa." />
           ) : [...data.clientes].sort((a, b) => (b.probabilidad || 0) - (a.probabilidad || 0)).slice(0, 8).map((c) => (
-            <div key={c.id} className="link-row" onClick={() => navigate('localizacion', c.id)}>
+            <div key={c.id} className="link-row" onClick={() => navigate('localización', c.id)}>
               <div className="ico">{c.contacto?.website ? '🌐' : '🏪'}</div>
               <div style={{ flex: 1, minWidth: 0 }}>
                 <div className="name truncate">{c.nombre}</div>
@@ -132,19 +132,19 @@ export default function Dashboard({ settings, info, navigate }) {
       <div className="grid grid-2">
         <Card title="Accesos rapidos" icon="⚡">
           <div className="quick-grid">
-            <button className="quick" onClick={() => navigate('localizacion')}><span className="ico">📍</span><b>Localizar clientes</b><span>Mapa con analisis deConversion</span></button>
+            <button className="quick" onClick={() => navigate('localización')}><span className="ico">📍</span><b>Localizar clientes</b><span>Mapa con análisis deConversion</span></button>
             <button className="quick" onClick={() => navigate('presupuestos')}><span className="ico">📄</span><b>Crear presupuesto</b><span>IA + partidas + IVA/IRPF</span></button>
-            <button className="quick" onClick={() => navigate('fabrica')}><span className="ico">🏭</span><b>La Fabrica</b><span>Apps, agentes y webs</span></button>
-            <button className="quick" onClick={() => navigate('legal')}><span className="ico">⚖️</span><b>Analisis legal</b><span>Cookies, RGPD, LSSI…</span></button>
+            <button className="quick" onClick={() => navigate('fabrica')}><span className="ico">🏭</span><b>La Fábrica</b><span>Apps, agentes y webs</span></button>
+            <button className="quick" onClick={() => navigate('legal')}><span className="ico">⚖️</span><b>Análisis legal</b><span>Cookies, RGPD, LSSI…</span></button>
             <button className="quick" onClick={() => navigate('terminal')}><span className="ico">⬛</span><b>Terminal IA</b><span>Consola directa al modelo</span></button>
-            <button className="quick" onClick={() => navigate('configuracion')}><span className="ico">⚙️</span><b>Configuracion</b><span>Proveedores y modelos</span></button>
+            <button className="quick" onClick={() => navigate('configuración')}><span className="ico">⚙️</span><b>Configuración</b><span>Proveedores y modelos</span></button>
           </div>
         </Card>
 
         <Card title="Cumplimiento legal" icon="⚖️" subtitle="Media de las auditorias realizadas"
           actions={<button className="btn sm ghost" onClick={() => navigate('legal')}>Analizar</button>}>
           {data.analyses.length === 0 ? (
-            <Empty icon="⚖️" title="Sin analisis" text="Audita una web o un proyecto generado." />
+            <Empty icon="⚖️" title="Sin análisis" text="Audita una web o un proyecto generado." />
           ) : (
             <div className="stack-sm">
               <div className="row">
@@ -175,7 +175,7 @@ export default function Dashboard({ settings, info, navigate }) {
         </Card>
       </div>
 
-      <Card title="Estado del sistema" icon="🖥️" subtitle="Informacion tecnica de la instalacion">
+      <Card title="Estado del sistema" icon="🖥️" subtitle="Información técnica de la instalación">
         <div className="grid grid-3">
           <dl className="kv">
             <dt>Version</dt><dd>{info?.version}</dd>

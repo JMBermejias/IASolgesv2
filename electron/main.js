@@ -109,7 +109,7 @@ function createWindow() {
         } catch (e) { console.error('[smoke] eval fallo:', e.message); }
         await new Promise((r) => setTimeout(r, Number(process.env.IASOLGES_EVAL_WAIT || 9000)));
       }
-      console.log('[smoke] ventana cargada, informacion:', JSON.stringify(app.getVersion()));
+      console.log('[smoke] ventana cargada, información:', JSON.stringify(app.getVersion()));
       if (win && process.env.IASOLGES_DEBUG_BOUNDS) {
         const wa = require('electron').screen.getPrimaryDisplay().workAreaSize;
         console.log('[smoke] bounds ventana:', JSON.stringify(win.getBounds()), 'maximizada:', win.isMaximized(), 'pantalla:', JSON.stringify(wa));
@@ -143,15 +143,15 @@ function buildMenu() {
       ]
     },
     {
-      label: 'Aplicacion',
+      label: 'Aplicación',
       submenu: [
         { label: 'Inicio', accelerator: 'CmdOrCtrl+1', click: () => broadcast('ui:navigate', { view: 'inicio' }) },
-        { label: 'Clientes (Mapa)', accelerator: 'CmdOrCtrl+2', click: () => broadcast('ui:navigate', { view: 'localizacion' }) },
+        { label: 'Clientes (Mapa)', accelerator: 'CmdOrCtrl+2', click: () => broadcast('ui:navigate', { view: 'localización' }) },
         { label: 'Presupuestos', accelerator: 'CmdOrCtrl+3', click: () => broadcast('ui:navigate', { view: 'presupuestos' }) },
-        { label: 'La Fabrica', accelerator: 'CmdOrCtrl+4', click: () => broadcast('ui:navigate', { view: 'fabrica' }) },
-        { label: 'Analisis Legal', accelerator: 'CmdOrCtrl+5', click: () => broadcast('ui:navigate', { view: 'legal' }) },
+        { label: 'La Fábrica', accelerator: 'CmdOrCtrl+4', click: () => broadcast('ui:navigate', { view: 'fabrica' }) },
+        { label: 'Análisis Legal', accelerator: 'CmdOrCtrl+5', click: () => broadcast('ui:navigate', { view: 'legal' }) },
         { label: 'Terminal IA', accelerator: 'CmdOrCtrl+6', click: () => broadcast('ui:navigate', { view: 'terminal' }) },
-        { label: 'Configuracion', accelerator: 'CmdOrCtrl+,', click: () => broadcast('ui:navigate', { view: 'configuracion' }) },
+        { label: 'Configuración', accelerator: 'CmdOrCtrl+,', click: () => broadcast('ui:navigate', { view: 'configuración' }) },
         { type: 'separator' },
         { label: 'Actualizar desde GitHub', click: async () => {
           const r = await updater.check();
@@ -159,7 +159,7 @@ function buildMenu() {
           broadcast('ui:navigate', { view: 'configuracion' });
         } },
         { type: 'separator' },
-        { label: 'Salir de la aplicacion', accelerator: 'CmdOrCtrl+Shift+Q', click: () => app.quit() }
+        { label: 'Salir de la aplicación', accelerator: 'CmdOrCtrl+Shift+Q', click: () => app.quit() }
       ]
     },
     {
@@ -306,7 +306,7 @@ function registerIpc() {
     return { file, abrir: file };
   });
 
-  /* --- Fabrica --- */
+  /* --- Fábrica --- */
   handle('factory:tipos', () => factory.TIPOS);
   handle('factory:create', async (args) => {
     const streamTo = {
@@ -355,7 +355,7 @@ function registerIpc() {
   handle('update:check', () => updater.check());
   handle('update:download', async () => {
     const info = await updater.check();
-    if (!info.latest?.asset) throw new Error('No hay paquete .deb disponible en la ultima release');
+    if (!info.latest?.asset) throw new Error('No hay paquete .deb disponible en la última release');
     const file = await updater.download(info.latest.asset.url);
     return { ...file, latest: info.latest };
   });
@@ -388,7 +388,7 @@ function renderMarkdown(p) {
   lines.push(`**Validez:** ${p.validezDias || 30} dias`);
   lines.push('');
   if (p.resumen) lines.push(`## Resumen\n${p.resumen}\n`);
-  if (p.solucion) lines.push(`## Solucion propuesta\n${p.solucion}\n`);
+  if (p.solucion) lines.push(`## Solución propuesta\n${p.solucion}\n`);
   lines.push('## Partidas');
   lines.push('| Concepto | Horas | Precio/hora | Importe |');
   lines.push('|---|---|---|---|');

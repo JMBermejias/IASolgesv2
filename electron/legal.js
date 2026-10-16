@@ -22,7 +22,7 @@ const NORMATIVA = [
   { id: 'lorgaa', nombre: 'Ley Orgánica 3/2018 LOPDGDD', url: 'https://www.boe.es/buscar/act.php?id=BOE-A-2018-16673', arts: '5, 6, 9' },
   { id: 'accesibilidad', nombre: 'RD 1112/2018 (Accesibilidad)', url: 'https://www.boe.es/buscar/act.php?id=BOE-A-2018-12599', arts: '2, 3, 4, 8' },
   { id: 'consumidor', nombre: 'RD 1/2007 legislation consumidor', url: 'https://www.boe.es/buscar/act.php?id=BOE-A-2007-20555', arts: '5-9, 13, 17' },
-  { id: 'ecommerce', nombre: 'Ley 7/1992 LCE + RD 206/2003 comercio electronico', url: 'https://www.boe.es/buscar/act.php?id=BOE-A-2003-18915', arts: '6, 8, 10, 37' },
+  { id: 'ecommerce', nombre: 'Ley 7/1992 LCE + RD 206/2003 comercio electrónico', url: 'https://www.boe.es/buscar/act.php?id=BOE-A-2003-18915', arts: '6, 8, 10, 37' },
   { id: 'cookies', nombre: 'Directiva 2002/22 + guia AEPD cookies', url: 'https://www.aepd.es/preguntas-frecuentes/3-proteccion-de-datos/3-3-derechos/3-3-4-cookies', arts: 'Consentimiento previo' },
   { id: 'licencias', nombre: 'Licencias de software libres (OSS)', url: 'https://www.gnu.org/licenses/lgpl-3.0.html', arts: 'Copyleft y atribucion' },
   { id: 'pcie', nombre: 'Ley 11/2022 General de Telecomunicaciones', url: 'https://www.boe.es/buscar/act.php?id=BOE-A-2022-10757', arts: '89 (cookies)' },
@@ -111,23 +111,23 @@ const CHECKS = [
   {
     id: 'cookies-declaracion',
     categoria: 'Cookies',
-    nombre: 'Politica de cookies',
+    nombre: 'Política de cookies',
     nivel: 'alta',
     baseLegal: 'cookies',
     test: (ctx) => {
       const found = ctx.links.some((l) => /(cookie|cookies)/i.test(l.href) || /cookie/i.test(l.text));
       return {
         ok: found,
-        problema: 'No se ha encontrado politica de cookies',
-        solucion: 'Publica una politica de cookies detailing que cookies se utilizan, su finalidad, duracion, proveedor y como retirar el consentimiento.',
+        problema: 'No se ha encontrado política de cookies',
+        solucion: 'Pública una política de cookies detailing que cookies se utilizan, su finalidad, duracion, proveedor y como retirar el consentimiento.',
         referencia: 'Ley 34/2002 art. 22.2; guia AEPD'
       };
     }
   },
   {
     id: 'privacidad',
-    categoria: 'Proteccion de datos',
-    nombre: 'Politica de privacidad',
+    categoria: 'Protección de datos',
+    nombre: 'Política de privacidad',
     nivel: 'critica',
     baseLegal: 'rgpd',
     test: (ctx) => {
@@ -135,15 +135,15 @@ const CHECKS = [
         || /pol.tica de privacidad/i.test(ctx.text);
       return {
         ok: found,
-        problema: 'No se detecta politica de privacidad',
-        solucion: 'Redacta y publica la politica de privacidad con: identidad del responsable, datos tratados, finalidad, base juridica, destinatarios, conservacion, derechos del interesado y transferencias internacionales.',
+        problema: 'No se detecta política de privacidad',
+        solucion: 'Redacta y pública la política de privacidad con: identidad del responsable, datos tratados, finalidad, base juridica, destinatarios, conservacion, derechos del interesado y transferencias internacionales.',
         referencia: 'RGPD art. 13 y 14'
       };
     }
   },
   {
     id: 'aviso-legal',
-    categoria: 'Informacion legal',
+    categoria: 'Información legal',
     nombre: 'Aviso legal',
     nivel: 'alta',
     baseLegal: 'lssi',
@@ -152,8 +152,8 @@ const CHECKS = [
         || /aviso legal/i.test(ctx.text);
       return {
         ok: found,
-        problema: 'No se encuentra aviso legal ni informacion sobre el prestador de servicios',
-        solucion: 'Incluye el aviso legal con: nombre y NIF/CIF del titular, domicilio, correo electronico, registro de la actividad, condiciones de uso y titular del dominio.',
+        problema: 'No se encuentra aviso legal ni información sobre el prestador de servicios',
+        solucion: 'Incluye el aviso legal con: nombre y NIF/CIF del titular, domicilio, correo electrónico, registro de la actividad, condiciones de uso y titular del dominio.',
         referencia: 'Ley 34/2002 art. 5'
       };
     }
@@ -169,14 +169,14 @@ const CHECKS = [
       return {
         ok: found,
         problema: 'No se detectan terminos y condiciones de uso/venta',
-        solucion: 'Publica condiciones de uso y, si hay venta, condiciones de compra: informacion precontractual, precios, forma de pago, entrega, desistimiento y garantia.',
+        solucion: 'Pública condiciones de uso y, si hay venta, condiciones de compra: información precontractual, precios, forma de pago, entrega, desistimiento y garantia.',
         referencia: 'RD 1/2007 art. 5; Ley 7/1992'
       };
     }
   },
   {
     id: 'identificacion',
-    categoria: 'Informacion legal',
+    categoria: 'Información legal',
     nombre: 'Identificacion del titular (nombre, CIF/NIF y domicilio)',
     nivel: 'alta',
     baseLegal: 'lssi',
@@ -188,7 +188,7 @@ const CHECKS = [
       return {
         ok,
         problema: 'No se identifica al titular del servicio con CIF/NIF y domicilio fiscal',
-        solucion: 'Anade el aviso legal con los datos identificativos exigidos para prestadores de servicios en Espana.',
+        solucion: 'Añade el aviso legal con los datos identificativos exigidos para prestadores de servicios en Espana.',
         referencia: 'Ley 34/2002 art. 5.1'
       };
     }
@@ -203,8 +203,8 @@ const CHECKS = [
       const email = /[\w.+-]+@[\w-]+\.[\w.]{2,}/.test(ctx.text);
       return {
         ok: email,
-        problema: 'No se muestra direccion de correo electronico de contacto',
-        solucion: 'Publica un correo de contacto visible (ademas del formulario con aviso de privacidad).',
+        problema: 'No se muestra dirección de correo electrónico de contacto',
+        solucion: 'Pública un correo de contacto visible (ademas del formulario con aviso de privacidad).',
         referencia: 'RGPD art. 13.1.a'
       };
     }
@@ -220,7 +220,7 @@ const CHECKS = [
       return {
         ok: thirds.length === 0,
         problema: thirds.length ? `Se detectan servicios de terceros que rastrean al usuario: ${thirds.slice(0, 5).join(', ')}` : '',
-        solucion: 'Incluye los terceros en la politica de cookies y en el CMP, y limitarlos hasta el consentimiento. Revisa los acuerdos de encargo (DPA) y las transferencias internacionales.',
+        solucion: 'Incluye los terceros en la política de cookies y en el CMP, y limitarlos hasta el consentimiento. Revisa los acuerdos de encargo (DPA) y las transferencias internacionales.',
         referencia: 'RGPD art. 28 y 44-49'
       };
     }
@@ -246,7 +246,7 @@ const CHECKS = [
   {
     id: 'accesibilidad',
     categoria: 'Accesibilidad',
-    nombre: 'Accesibilidad basica (RD 1112/2018)',
+    nombre: 'Accesibilidad básica (RD 1112/2018)',
     nivel: 'media',
     baseLegal: 'accesibilidad',
     test: (ctx) => {
@@ -255,13 +255,13 @@ const CHECKS = [
       if (!/<meta[^>]+name=["']viewport/i.test(ctx.html)) problemas.push('falta viewport (no se adapta a movil)');
       const imgs = ctx.html.match(/<img\b[^>]*>/gi) || [];
       const sinAlt = imgs.filter((i) => !/\balt\s*=/i.test(i)).length;
-      if (sinAlt) problemas.push(`${sinAlt} imagenes sin atributo alt`);
+      if (sinAlt) problemas.push(`${sinAlt} imágenes sin atributo alt`);
       const titulo = (ctx.html.match(/<title[^>]*>([\s\S]*?)<\/title>/i) || [])[1];
       if (!titulo || titulo.trim().length < 10) problemas.push('titulo ausente o demasiado corto');
       return {
         ok: problemas.length === 0,
         problema: problemas.length ? `Problemas de accesibilidad detectados: ${problemas.join('; ')}` : '',
-        solucion: 'Anade lang, viewport, textos alternativos, jerarquia de encabezados, foco visible, contraste AA y navegacion por teclado. Declara el grado de cumplimiento (declaracion responsable de accesibilidad).',
+        solucion: 'Añade lang, viewport, textos alternativos, jerarquia de encabezados, foco visible, contraste AA y navegacion por teclado. Declara el grado de cumplimiento (declaracion responsable de accesibilidad).',
         referencia: 'RD 1112/2018 y Real Decreto 193/2023'
       };
     }
@@ -279,7 +279,7 @@ const CHECKS = [
         ok: desc && og,
         problema: !desc ? 'Falta meta description' : (!og ? 'Faltan etiquetas Open Graph para compartir en redes' : ''),
         solucion: 'Implementa meta title/description unicos, canonical, Open Graph, Twitter Card y datos estructurados JSON-LD (Organization, LocalBusiness).',
-        referencia: 'Buenas practicas de SEO'
+        referencia: 'Buenas prácticas de SEO'
       };
     }
   },
@@ -334,7 +334,7 @@ function findingsFromChecks(ctx) {
       referencia: res.referencia || '',
       baseLegal: check.baseLegal,
       fuente: 'analisis-estatico',
-      enlace: `analisis-legal#${check.id}`
+      enlace: `análisis-legal#${check.id}`
     });
   }
   return findings;
@@ -353,7 +353,7 @@ function veredicto(score, findings) {
   const altos = findings.filter((f) => f.severidad === 'alta' && f.estado === 'incumplimiento').length;
   if (criticos > 0) return { nivel: 'NO APTO', color: '#b91c1c', resumen: `${criticos} incumplimiento(s) critico(s) y ${altos} de nivel alto. Debe corregirse antes de publicarse.` };
   if (altos > 0) return { nivel: 'APTO CON RESERVAS', color: '#ea580c', resumen: `${altos} incumplimiento(s) de nivel alto pendientes de correccion.` };
-  if (score >= 90) return { nivel: 'APTO', color: '#15803d', resumen: 'Cumplimiento correcto delAnalisis automatico. Verifica siempre con un profesional juridico.' };
+  if (score >= 90) return { nivel: 'APTO', color: '#15803d', resumen: 'Cumplimiento correcto del análisis automático. Verifica siempre con un profesional jurídico.' };
   return { nivel: 'APTO CON MEJORAS', color: '#ca8a04', resumen: 'Sin incumplimientos criticos, pero hay puntos a mejorar.' };
 }
 
@@ -385,7 +385,7 @@ async function analyzeUrl(url) {
   };
 }
 
-/** Analisis estatico de un proyecto local (La Fabrica) */
+/** Analisis estatico de un proyecto local (La Fábrica) */
 function analyzeProjectStatic(dir) {
   const files = [];
   const walk = (cur, depth = 0) => {
@@ -433,23 +433,23 @@ function analyzeProjectStatic(dir) {
   }
 
   const findings = [];
-  const add = (o) => findings.push({ estado: 'incumplimiento', fuente: 'analisis-estatico', enlace: `analisis-legal#${o.checkId}`, ...o });
+  const add = (o) => findings.push({ estado: 'incumplimiento', fuente: 'analisis-estatico', enlace: `análisis-legal#${o.checkId}`, ...o });
 
-  if (secrets.length) add({ id: 'chk_secretos', checkId: 'secretos', categoria: 'Seguridad', nombre: 'Secretos en el codigo', severidad: 'critica', problema: `Se han detectado ${secrets.length} credencial(es) incrustadas en el codigo`, solucion: 'Retira las claves del codigo, las revoca y las traslada a variables de entorno (.env, nunca versionado).', referencia: 'RGPD art. 32 y practicas seguras de desarrollo' });
-  else findings.push({ id: 'chk_secretos', checkId: 'secretos', categoria: 'Seguridad', nombre: 'Secretos en el codigo', estado: 'correcto', severidad: 'info', problema: '', solucion: 'Ninguna. No se han detectado credenciales incrustadas.', referencia: '', fuente: 'analisis-estatico', enlace: 'analisis-legal#secretos' });
+  if (secrets.length) add({ id: 'chk_secretos', checkId: 'secretos', categoria: 'Seguridad', nombre: 'Secretos en el código', severidad: 'critica', problema: `Se han detectado ${secrets.length} credencial(es) incrustadas en el código`, solucion: 'Retira las claves del código, las revoca y las traslada a variables de entorno (.env, nunca versionado).', referencia: 'RGPD art. 32 y prácticas seguras de desarrollo' });
+  else findings.push({ id: 'chk_secretos', checkId: 'secretos', categoria: 'Seguridad', nombre: 'Secretos en el código', estado: 'correcto', severidad: 'info', problema: '', solucion: 'Ninguna. No se han detectado credenciales incrustadas.', referencia: '', fuente: 'analisis-estatico', enlace: 'análisis-legal#secretos' });
 
-  if (cookieCode) findings.push({ id: 'chk_consentimiento', checkId: 'consentimiento', categoria: 'Cookies', nombre: 'Mecanismo de consentimiento', estado: 'correcto', severidad: 'info', problema: '', solucion: 'Ninguna. Se detecta implementacion de consentimiento de cookies.', referencia: 'RGPD art. 6.1.a', fuente: 'analisis-estatico', enlace: 'analisis-legal#consentimiento' });
+  if (cookieCode) findings.push({ id: 'chk_consentimiento', checkId: 'consentimiento', categoria: 'Cookies', nombre: 'Mecanismo de consentimiento', estado: 'correcto', severidad: 'info', problema: '', solucion: 'Ninguna. Se detecta implementacion de consentimiento de cookies.', referencia: 'RGPD art. 6.1.a', fuente: 'analisis-estatico', enlace: 'análisis-legal#consentimiento' });
   else add({ id: 'chk_consentimiento', checkId: 'consentimiento', categoria: 'Cookies', nombre: 'Mecanismo de consentimiento', severidad: 'media', problema: 'No se ha detectado banner ni mecanismo de consentimiento de cookies', solucion: 'Implementa un CMP con aceptacion, rechazo y retirada del consentimiento antes de cargar cookies no esenciales.', referencia: 'RGPD art. 6.1.a y 7' });
 
-  if (trackers.length) add({ id: 'chk_terceros', checkId: 'terceros', categoria: 'Cookies', nombre: 'Servicios de terceros con seguimiento', severidad: 'media', problema: `Archivos con rastreadores de terceros: ${[...new Set(trackers)].slice(0, 5).join(', ')}`, solucion: 'Carga los rastreadores tras el consentimiento y declaralos en la politica de cookies.', referencia: 'RGPD art. 28 y 44-49' });
+  if (trackers.length) add({ id: 'chk_terceros', checkId: 'terceros', categoria: 'Cookies', nombre: 'Servicios de terceros con seguimiento', severidad: 'media', problema: `Archivos con rastreadores de terceros: ${[...new Set(trackers)].slice(0, 5).join(', ')}`, solucion: 'Carga los rastreadores tras el consentimiento y declaralos en la política de cookies.', referencia: 'RGPD art. 28 y 44-49' });
 
-  if (personalData) findings.push({ id: 'chk_datos', checkId: 'datos', categoria: 'Proteccion de datos', nombre: 'Tratamiento de datos personales', estado: 'correcto', severidad: 'info', problema: '', solucion: 'Verifica que existe base juridica, informacion al interesado y registro de tratamientos.', referencia: 'RGPD art. 13 y 30', fuente: 'analisis-estatico', enlace: 'analisis-legal#datos' });
+  if (personalData) findings.push({ id: 'chk_datos', checkId: 'datos', categoria: 'Protección de datos', nombre: 'Tratamiento de datos personales', estado: 'correcto', severidad: 'info', problema: '', solucion: 'Verifica que existe base juridica, información al interesado y registro de tratamientos.', referencia: 'RGPD art. 13 y 30', fuente: 'analisis-estatico', enlace: 'análisis-legal#datos' });
 
-  if (!hasPrivacy) add({ id: 'chk_privacidad', checkId: 'privacidad', categoria: 'Proteccion de datos', nombre: 'Politica de privacidad', severidad: 'critica', problema: 'El proyecto no incluye politica de privacidad', solucion: 'Anade una politica de privacidad completa y enlazala en el pie de pagina.', referencia: 'RGPD art. 13 y 14' });
-  if (!hasLegal) add({ id: 'chk_aviso', checkId: 'aviso-legal', categoria: 'Informacion legal', nombre: 'Aviso legal', severidad: 'alta', problema: 'El proyecto no incluye aviso legal', solucion: 'Crea el aviso legal con datos del responsable, actividad, dominio y condiciones de uso.', referencia: 'Ley 34/2002 art. 5' });
-  if (!hasLicense) add({ id: 'chk_licencia', checkId: 'licencia', categoria: 'Licencias', nombre: 'Licencia del software', severidad: 'media', problema: 'El proyecto no incluye fichier de licencia', solucion: 'Anade una licencia (MIT o la que corresponda) y revisa las licencias de las dependencias.', referencia: 'OSS licenses' });
-  if (!hasReadme) add({ id: 'chk_readme', checkId: 'readme', categoria: 'Documentacion', nombre: 'Documentacion del proyecto', severidad: 'leve', problema: 'Falta README.md', solucion: 'Documenta instalacion, uso, arquitectura y variables de entorno.', referencia: 'Buenas practicas' });
-  if (!hasEnvExample) add({ id: 'chk_env', checkId: 'env', categoria: 'Seguridad', nombre: 'Ejemplo de variables de entorno', severidad: 'media', problema: 'Falta .env.example', solucion: 'Crea .env.example con todas las claves necesarias (sin valores reales) y anade .env al .gitignore.', referencia: 'RGPD art. 32' });
+  if (!hasPrivacy) add({ id: 'chk_privacidad', checkId: 'privacidad', categoria: 'Protección de datos', nombre: 'Política de privacidad', severidad: 'critica', problema: 'El proyecto no incluye política de privacidad', solucion: 'Añade una política de privacidad completa y enlazala en el pie de página.', referencia: 'RGPD art. 13 y 14' });
+  if (!hasLegal) add({ id: 'chk_aviso', checkId: 'aviso-legal', categoria: 'Información legal', nombre: 'Aviso legal', severidad: 'alta', problema: 'El proyecto no incluye aviso legal', solucion: 'Crea el aviso legal con datos del responsable, actividad, dominio y condiciones de uso.', referencia: 'Ley 34/2002 art. 5' });
+  if (!hasLicense) add({ id: 'chk_licencia', checkId: 'licencia', categoria: 'Licencias', nombre: 'Licencia del software', severidad: 'media', problema: 'El proyecto no incluye fichier de licencia', solucion: 'Añade una licencia (MIT o la que corresponda) y revisa las licencias de las dependencias.', referencia: 'OSS licenses' });
+  if (!hasReadme) add({ id: 'chk_readme', checkId: 'readme', categoria: 'Documentación', nombre: 'Documentación del proyecto', severidad: 'leve', problema: 'Falta README.md', solucion: 'Documenta instalación, uso, arquitectura y variables de entorno.', referencia: 'Buenas prácticas' });
+  if (!hasEnvExample) add({ id: 'chk_env', checkId: 'env', categoria: 'Seguridad', nombre: 'Ejemplo de variables de entorno', severidad: 'media', problema: 'Falta .env.example', solucion: 'Crea .env.example con todas las claves necesarias (sin valores reales) y añade .env al .gitignore.', referencia: 'RGPD art. 32' });
 
   const score = puntuar(findings);
   return {
@@ -467,16 +467,16 @@ function buildAiPrompt({ objetivo, contexto, tipo }) {
     ? `Se ha analizado la URL ${objetivo}. Titulo: ${contexto.titulo || ''}. Estado HTTP: ${contexto.status}.`
     : `Se ha analizado el proyecto located en ${objetivo}.`;
 
-  return `Eres un abogado experto en derecho digital espanol y un auditor de cumplimiento (RGPD, LSSI-CE, LOPDGDD, RD 1112/2018, legislacion del consumidor y de comercio electronico).
+  return `Eres un abogado experto en derecho digital espanol y un auditor de cumplimiento (RGPD, LSSI-CE, LOPDGDD, RD 1112/2018, legislación del consumidor y de comercio electrónico).
 
 ${tipoTxt}
 
-HALLAZGOS DEL ANALISIS ESTATICO AUTOMATICO (JSON):
+HALLAZGOS DEL Análisis Estático Automático (JSON):
 ${JSON.stringify(contexto, null, 1).slice(0, 18000)}
 
 TU TAREA:
-1. Revisa y completa elAnalisis: no repitas literalmente los hallazgos automaticos, profundiza en ellos, anade los que falten (inclusive los mas insignificantes: desde cookies hasta la letra pequena).
-2. Para CADA hallazgo indica: problema concreto, por que es un problema, solucion practica y aplicable, referencia normativa exacta y enlace oficial.
+1. Revisa y completa el análisis: no repitas literalmente los hallazgos automáticos, profundiza en ellos, añade los que falten (inclusive los más insignificantes: desde cookies hasta la letra pequeña).
+2. Para CADA hallazgo indica: problema concreto, por que es un problema, solución práctica y aplicable, referencia normativa exacta y enlace oficial.
 3. Prioriza por severidad: critica, alta, media, leve.
 4. Redacta un resumen ejecutivo y una lista de acciones priorizadas.
 
@@ -488,20 +488,20 @@ Responde EXCLUSIVAMENTE con JSON valido:
   "hallazgos": [
     {
       "id": "slug",
-      "categoria": "Cookies | Proteccion de datos | Contratacion | Seguridad | Accesibilidad | Propiedad intelectual | Informacion legal | SEO",
+      "categoría": "Cookies | Protección de datos | Contratacion | Seguridad | Accesibilidad | Propiedad intelectual | Información legal | SEO",
       "nombre": "titulo corto",
       "severidad": "critica|alta|media|leve|info",
       "estado": "incumplimiento|correcto",
-      "problema": "descripcion tecnica del problema",
+      "problema": "descripción técnica del problema",
       "impacto": "que ocurre si no se corrige",
-      "solucion": "solucion concreta paso a paso",
+      "solución": "solución concreta paso a paso",
       "referencia": "RGPD art. 13; Ley 34/2002 art. 5...",
       "baseLegal": "rgpd|lssi|consumidor|accesibilidad|cookies|ecommerce|pcie|lal|licencias|lorgaa",
       "enlace": "https://www.boe.es/... o https://eur-lex.europa.eu/..."
     }
   ],
   "acciones": ["accion 1", "accion 2"],
-  "avisos": ["advertencia o limite delAnalisis"]
+  "avisos": ["advertencia o límite del análisis"]
 }`;
 }
 
@@ -558,7 +558,7 @@ async function analyze({ url, projectId, dir, tipo, provider, model, agent = 'pl
       baseLegal: h.baseLegal || null,
       enlaceUrl: h.enlace || (h.baseLegal && normativa(h.baseLegal)?.url) || null,
       fuente: 'ia',
-      enlace: `analisis-legal#${id}`
+      enlace: `análisis-legal#${id}`
     });
   }
 
@@ -576,7 +576,7 @@ async function analyze({ url, projectId, dir, tipo, provider, model, agent = 'pl
     veredicto: ver,
     resumenIA: ia?.resumen || '',
     acciones: ia?.acciones || [],
-    avisos: ia?.avisos || ['El analisis es una orientacion técnica y no sustituye al asesoramiento juridico profesional.'],
+    avisos: ia?.avisos || ['El análisis es una orientacion técnica y no sustituye al asesoramiento jurídico profesional.'],
     hallazgos: todos,
     errorIA,
     contexto: base.contexto,

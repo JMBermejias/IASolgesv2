@@ -11,7 +11,7 @@ export default function Topbar({ view, info, settings, update, collapsed, onTogg
 
   return (
     <header className="topbar">
-      <button className="btn ghost icon" onClick={onToggleSidebar} title={collapsed ? 'Mostrar menu' : 'Ocultar menu'}>
+      <button className="btn ghost icon" onClick={onToggleSidebar} title={collapsed ? 'Mostrar menú' : 'Ocultar menú'}>
         {collapsed ? '☰' : '⏷'}
       </button>
       <div>
@@ -26,7 +26,7 @@ export default function Topbar({ view, info, settings, update, collapsed, onTogg
         </span>
 
         {update?.available && (
-          <button className="btn sm" onClick={() => onNavigate('configuracion', 'actualizaciones')}>
+          <button className="btn sm" onClick={() => onNavigate('configuración', 'actualizaciones')}>
             ⬆️ Nueva version {update.latest?.tag}
           </button>
         )}
@@ -40,7 +40,7 @@ export default function Topbar({ view, info, settings, update, collapsed, onTogg
                 className="card"
                 style={{ position: 'absolute', right: 0, top: 44, width: 320, zIndex: 50, padding: 12, boxShadow: 'var(--shadow-lg)' }}
               >
-                <div className="bold small" style={{ marginBottom: 8 }}>Tema de la aplicacion</div>
+                <div className="bold small" style={{ marginBottom: 8 }}>Tema de la aplicación</div>
                 <div className="theme-grid">
                   {THEMES.map((t) => (
                     <button key={t.id} className={`theme-card ${settings?.theme === t.id ? 'on' : ''}`} onClick={() => setTheme(t.id)}>
@@ -51,7 +51,7 @@ export default function Topbar({ view, info, settings, update, collapsed, onTogg
                     </button>
                   ))}
                 </div>
-                <button className="btn block sm" style={{ marginTop: 10 }} onClick={() => onNavigate('configuracion', 'apariencia')}>
+                <button className="btn block sm" style={{ marginTop: 10 }} onClick={() => onNavigate('configuración', 'apariencia')}>
                   Mas opciones de apariencia
                 </button>
               </div>
@@ -59,9 +59,9 @@ export default function Topbar({ view, info, settings, update, collapsed, onTogg
           )}
         </div>
 
-        <button className="btn ghost icon" onClick={() => onNavigate('configuracion')} title="Configuracion">⚙️</button>
+        <button className="btn ghost icon" onClick={() => onNavigate('configuración')} title="Configuración">⚙️</button>
         <button className="btn ghost icon" onClick={() => onNavigate('credenciales')} title="Credenciales">🔑</button>
-        <button className="btn ghost icon" onClick={() => window.api.exit()} title="Salir de la aplicacion" style={{ color: 'var(--danger)' }}>⏻</button>
+        <button className="btn ghost icon" onClick={() => window.api.exit()} title="Salir de la aplicación" style={{ color: 'var(--danger)' }}>⏻</button>
       </div>
     </header>
   );

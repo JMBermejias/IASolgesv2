@@ -92,7 +92,7 @@ export default function Presupuestos({ id, settings, navigate }) {
             <div className="table-wrap">
               <table className="data">
                 <thead>
-                  <tr><th>Numero</th><th>Cliente</th><th>Titulo</th><th>Fecha</th><th>Total</th><th>Estado</th><th /></tr>
+                  <tr><th>Número</th><th>Cliente</th><th>Titulo</th><th>Fecha</th><th>Total</th><th>Estado</th><th /></tr>
                 </thead>
                 <tbody>
                   {lista.map((p) => (
@@ -124,9 +124,9 @@ export default function Presupuestos({ id, settings, navigate }) {
           <Card icon="🤖" title="Generador de presupuestos con IA" subtitle="Selecciona clientes y apartados: la IA redacta el presupuesto completo con partidas, precios, IVA e IRPF">
             <div className="grid grid-2">
               <div>
-                <Field label={`Clientes seleccionados (${selClientes.length})`} hint="Puedes marcarlos desde Localizacion de clientes">
+                <Field label={`Clientes seleccionados (${selClientes.length})`} hint="Puedes marcarlos desde Localización de clientes">
                   <div className="client-list" style={{ maxHeight: 220 }}>
-                    {clientes.length === 0 && <Empty icon="📍" title="No hay clientes guardados" text="Ve a Localizacion de clientes y guarda resultados." />}
+                    {clientes.length === 0 && <Empty icon="📍" title="No hay clientes guardados" text="Ve a Localización de clientes y guarda resultados." />}
                     {clientes.map((c) => (
                       <label key={c.id} className="client-row" style={{ cursor: 'pointer' }}>
                         <input type="checkbox" checked={selClientes.find((s) => s.id === c.id) ? true : false}
@@ -140,7 +140,7 @@ export default function Presupuestos({ id, settings, navigate }) {
                     ))}
                   </div>
                 </Field>
-                <Field label="Necesidades detectadas" hint="Describe el problema del cliente: lo mas concreto posible, la IA lo convierte en partidas tecnicas">
+                <Field label="Necesidades detectadas" hint="Describe el problema del cliente: lo mas concreto posible, la IA lo convierte en partidas técnicas">
                   <textarea rows={5} value={form.necesidades}
                     placeholder="Ej. Quieren presencia en Internet, no tienen web, reciben clientes por WhatsApp y pierden ventas por la noche. Quieren web con catalogo, contacto y pedidos."
                     onChange={(e) => setForm({ ...form, necesidades: e.target.value })} />
@@ -158,18 +158,18 @@ export default function Presupuestos({ id, settings, navigate }) {
                     ))}
                   </div>
                 </Field>
-                <Field label="Contexto adicional" hint="Plazos, presupuesto maximo del cliente, tecnologia preferida…">
-                  <textarea rows={3} value={form.contexto} placeholder="Ej. Presupuesto maximo 4.000 EUR, necesitan en 2 meses, hosting en su propio servidor"
+                <Field label="Contexto adicional" hint="Plazos, presupuesto máximo del cliente, tecnología preferida…">
+                  <textarea rows={3} value={form.contexto} placeholder="Ej. Presupuesto máximo 4.000 EUR, necesitan en 2 meses, hosting en su propio servidor"
                     onChange={(e) => setForm({ ...form, contexto: e.target.value })} />
                 </Field>
                 <Field label="Instrucciones extra para la IA">
-                  <textarea rows={2} value={form.extra} placeholder="Ej. Incluir mantenimiento 12 meses y formacion"
+                  <textarea rows={2} value={form.extra} placeholder="Ej. Incluir mantenimiento 12 meses y formación"
                     onChange={(e) => setForm({ ...form, extra: e.target.value })} />
                 </Field>
                 <div className="alert info">
                   <div>
                     <b>Modelo usado:</b> {settings?.provider} · {settings?.models?.[settings?.provider] || 'por defecto'}
-                    <div className="tiny">Puedes cambiarlo en Configuracion.</div>
+                    <div className="tiny">Puedes cambiarlo en Configuración.</div>
                   </div>
                 </div>
               </div>
@@ -179,7 +179,7 @@ export default function Presupuestos({ id, settings, navigate }) {
               <button className="btn primary lg" onClick={generar} disabled={generando}>
                 {generando ? <><span className="spinner" /> Redactando presupuesto...</> : '🤖 Generar presupuesto'}
               </button>
-              <button className="btn" onClick={() => navigate('fabrica')}>🏭 Ir a La Fabrica</button>
+              <button className="btn" onClick={() => navigate('fabrica')}>🏭 Ir a La Fábrica</button>
               <div className="spacer" />
               <span className="small muted">IVA {settings?.quote?.ivaRate}% · IRPF {settings?.quote?.irpfRate}% · validez {settings?.quote?.validityDays} dias</span>
             </div>
@@ -285,7 +285,7 @@ function DetallePresupuesto({ presupuesto, onChange, onRefresh, push, navigate }
             <button key={e} className={`chip ${p.estado === e ? 'on' : ''}`} onClick={() => cambiarEstado(e)}>{e}</button>
           ))}
           <div className="spacer" />
-          <button className="btn primary sm" onClick={() => navigate('fabrica', p.id)}>🏭 Construir en La Fabrica</button>
+          <button className="btn primary sm" onClick={() => navigate('fabrica', p.id)}>🏭 Construir en La Fábrica</button>
           <button className="btn sm" onClick={crearTrabajo}>🗂️ Registrar trabajo</button>
         </div>
       </Card>
@@ -318,7 +318,7 @@ function DetallePresupuesto({ presupuesto, onChange, onRefresh, push, navigate }
         <div className="table-wrap">
           <table className="data">
             <thead>
-              <tr><th>Concepto</th><th>Descripcion</th><th style={{ width: 110 }}>Horas</th><th style={{ width: 130 }}>Precio/hora</th><th style={{ width: 140 }}>Importe</th></tr>
+              <tr><th>Concepto</th><th>Descripción</th><th style={{ width: 110 }}>Horas</th><th style={{ width: 130 }}>Precio/hora</th><th style={{ width: 140 }}>Importe</th></tr>
             </thead>
             <tbody>
               {p.partidas.map((pt, i) => (
