@@ -141,10 +141,21 @@ function uploadAsset(releaseId, filePath, token) {
   sh(`git tag -f ${tag} -m "${mensaje.replace(/"/g, "'")}" || true`);
 
   if (!sinPush) {
-    // Autenticacion con el token del titular (sin guardarlo en el remoto)
-    const auth = `http.extraheader=Authorization: Basic ${Buffer.from(`x-access-token:${token}`).toString('base64')}`;
-    sh(`git -c ${auth} push origin main`);
-    sh(`git -c ${auth} push origin ${tag} --force`);
+    // Autenticacion con el token del titular sin guardarlo en el remoto
+    const basic = Buffer.from(`x-access-token:${token}`).toString('base64');
+    const env = {
+      ...process.env,
+      GIT_CONFIG_COUNT: '1',
+      GIT_CONFIG_KEY_0: 'http.extraheader',
+      GIT_CONFIG_VALUE_0: `Authorization: Basic ${basic}`
+    };
+    const push = (refspec, force) => {
+      console.log(`\n$ git push origin ${refspec}${force ? ' --force' : ''}`);
+      const r = spawnSync('git', ['push', 'origin', refspec, ...(force ? ['--force'] : [])], { stdio: 'inherit', cwd: ROOT, env });
+      if (r.status !== 0) throw new Error(`git push ${refspec} fallo`);
+    };
+    push('main');
+    push(tag, true);
   }
 
   // Release
