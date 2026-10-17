@@ -1,7 +1,7 @@
 {
   "name": "iasolges-v2",
   "productName": "IASolges.v2",
-  "version": "2.0.13",
+  "version": "2.0.14",
   "description": "IASolges.v2 - Agente inteligente de creacion de software, localizacion de clientes, presupuestos, fabrica de aplicaciones y analisis legal con IA",
   "author": {
     "name": "Jose Manuel Bernabeu Mejias",
@@ -19,7 +19,8 @@
     "unpack": "electron-builder --linux dir --x64",
     "deb": "node scripts/build-deb.js",
     "package": "npm run build && npm run unpack && npm run deb",
-    "release": "node scripts/release.js"
+    "release": "node scripts/release.js",
+    "arch": "bash scripts/build-arch-pkg.sh"
   },
   "dependencies": {},
   "devDependencies": {

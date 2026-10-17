@@ -2,6 +2,15 @@
 
 Todas las novedades de IASolges.v2.
 
+## [2.0.14] - 2026-10-17
+
+### Anadido
+- **Instalación en Arch Linux**: repositorio con `PKGBUILD` y `.SRCINFO` en
+  https://github.com/JMBermejias/iasolges-v2-arch, instalable con `yay -G iasolges-v2 <url> && makepkg -si`.
+- La release publica además el **paquete binario** `iasolges-v2-2.0.14-x86_64.pkg.tar.zst`
+  para instalar directamente con `sudo pacman -U`.
+- `npm run arch` genera el paquete de Arch desde el código.
+
 ## [2.0.13] - 2026-10-17
 
 ### Anadido

@@ -139,6 +139,28 @@ El paquete `.deb` se ensambla en `dist-pkg/iasolges-v2-<version>-amd64.deb` e in
 
 ---
 
+## Instalación en Arch Linux (yay / AUR)
+
+```bash
+# Opción A: con el helper AUR yay
+yay -G iasolges-v2 https://github.com/JMBermejias/iasolges-v2-arch.git
+cd iasolges-v2 && makepkg -si
+
+# Opción B: con el paquete binario ya construido
+sudo pacman -U iasolges-v2-2.0.14-x86_64.pkg.tar.zst
+```
+
+Repositorio del `PKGBUILD`: https://github.com/JMBermejias/iasolges-v2-arch
+Después se ejecuta con `iasolges-v2` o desde el menú de aplicaciones.
+
+Construir el paquete de Arch desde el código:
+
+```bash
+npm run arch            # dist-pkg/iasolges-v2-<version>-x86_64.pkg.tar.zst
+```
+
+---
+
 ## Estructura del proyecto
 
 ```
