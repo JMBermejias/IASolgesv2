@@ -1,6 +1,6 @@
 pkgbase=iasolges-v2
 	pkgname=iasolges-v2
-	pkgver=2.0.14
+	pkgver=2.0.15
 	pkgrel=1
 	pkgdesc="Agente inteligente para localizar clientes en el mapa, crear presupuestos, generar software con IA (La Fabrica) y auditar legalmente los proyectos."
 	arch=('x86_64')
@@ -33,5 +33,5 @@ pkgbase=iasolges-v2
 		'pango')
 	optdepends=('git: publicacion de proyectos generados en repositorios'
 		'python: scripts auxiliares e informes')
-	source=("iasolges-v2-2.0.14-amd64.deb"::"https://github.com/JMBermejias/IASolgesv2/releases/download/v2.0.14/iasolges-v2-2.0.14-amd64.deb")
+	source=("iasolges-v2-2.0.15-amd64.deb"::"https://github.com/JMBermejias/IASolgesv2/releases/download/v2.0.15/iasolges-v2-2.0.15-amd64.deb")
 	sha256sums=('SKIP')

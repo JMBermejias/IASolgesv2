@@ -26,10 +26,10 @@ yay -G iasolges-v2 https://github.com/JMBermejias/iasolges-v2-arch.git && cd ias
 La release incluye el paquete ya construido:
 
 ```bash
-sudo pacman -U iasolges-v2-2.0.14-x86_64.pkg.tar.zst
+sudo pacman -U iasolges-v2-2.0.15-x86_64.pkg.tar.zst
 ```
 
-Descarga: https://github.com/JMBermejias/IASolgesv2/releases/download/v2.0.14/iasolges-v2-2.0.14-x86_64.pkg.tar.zst
+Descarga: https://github.com/JMBermejias/IASolgesv2/releases/download/v2.0.15/iasolges-v2-2.0.15-x86_64.pkg.tar.zst
 
 ## Ejecutar
 
