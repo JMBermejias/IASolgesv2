@@ -4,11 +4,12 @@ import { api, eur, haceCuanto } from '../lib/api.js';
 import { BackHome, BarRow, Card, Empty, Field, Loading, Modal, useToast } from '../lib/ui.jsx';
 
 const DEFAULT_CENTER = { lat: 38.4805, lon: -0.8033, label: 'Novelda, Alicante' };
+const MAX_CLIENTES = 500;
 
 export default function Localizacion({ settings, navigate, id }) {
   const { push } = useToast();
   const [categorias, setCategorias] = useState([]);
-  const [form, setForm] = useState({ query: 'Novelda, Alicante', category: 'todos', radius: 3, limit: 60, incluirPequenos: true });
+  const [form, setForm] = useState({ query: 'Novelda, Alicante', category: 'todos', radius: 3, limit: 150, incluirPequenos: true });
   const [center, setCenter] = useState(DEFAULT_CENTER);
   const [resultado, setResultado] = useState(null);
   const [buscando, setBuscando] = useState(false);
@@ -43,8 +44,8 @@ export default function Localizacion({ settings, navigate, id }) {
     // Solo se acepta un limite numerico: si el boton invoca la funcion directamente
     // React le pasa el evento del clic y eso rompia la busqueda.
     const limite = Number.isFinite(Number(limiteForzado)) && Number(limiteForzado) > 0
-      ? Math.min(300, Math.max(10, Number(limiteForzado)))
-      : Math.min(300, Math.max(10, Number(form.limit) || 60));
+      ? Math.min(MAX_CLIENTES, Math.max(10, Number(limiteForzado)))
+      : Math.min(MAX_CLIENTES, Math.max(10, Number(form.limit) || 150));
     // El area de trabajo (mapa + listado) se abre al instante, antes de tener datos
     setAreaAbierta(true);
     setMostrados(limite);
@@ -56,8 +57,8 @@ export default function Localizacion({ settings, navigate, id }) {
       setCenter(r.center);
       setSel([]);
       push(r.truncado
-        ? `${r.clientes.length} clientes de ${r.total} encontrados (máximo configurado: ${r.limite})`
-        : `${r.clientes.length} negocios analizados en ${r.categoria.label}`, 'success');
+        ? `${r.clientes.length} clientes de ${r.total} encontrados. Usa "Ver los ${r.total}" para verlos todos.`
+        : `${r.clientes.length} negocios analizados en ${r.categoria.label}`, r.truncado ? 'info' : 'success');
     } catch (e) {
       push(e.message, 'error', 7000);
     } finally {
@@ -77,12 +78,25 @@ export default function Localizacion({ settings, navigate, id }) {
   /** Amplia el listado: si no hay resultados suficientes, vuelve a consultar con mas limite */
   const verMas = async () => {
     if (!resultado) return;
-    const siguiente = Math.min(300, (mostrados || resultado.limite) + 60);
+    const actual = mostrados || resultado.limite;
+    const siguiente = Math.min(MAX_CLIENTES, actual + Math.max(60, Math.ceil((resultado.total - actual) / 2)));
     setMostrados(siguiente);
     if (siguiente > resultado.clientes.length) {
       setForm((f) => ({ ...f, limit: siguiente }));
       await buscar(siguiente);
     }
+  };
+
+  /** Muestra todos los negocios encontrados (hasta el maximo admisible) */
+  const verTodos = async () => {
+    if (!resultado) return;
+    const objetivo = Math.min(MAX_CLIENTES, resultado.total);
+    if (objetivo <= resultado.clientes.length) {
+      setMostrados(objetivo);
+      return;
+    }
+    setForm((f) => ({ ...f, limit: objetivo }));
+    await buscar(objetivo);
   };
 
   const toggle = (c) => setSel((prev) => (prev.find((x) => x.id === c.id) ? prev.filter((x) => x.id !== c.id) : [...prev, c]));
@@ -208,11 +222,11 @@ export default function Localizacion({ settings, navigate, id }) {
           </Field>
           <Field label={`Máximo de clientes: ${form.limit}`}>
             <div className="row row-tight" style={{ flexWrap: 'nowrap' }}>
-              <input type="number" min="10" max="300" step="5" value={form.limit} title="De 10 a 300 clientes por búsqueda"
+              <input type="number" min="10" max={MAX_CLIENTES} step="10" value={form.limit} title={`De 10 a ${MAX_CLIENTES} clientes por búsqueda`}
                 style={{ width: 78, flex: '0 0 78px' }}
-                onChange={(e) => setForm({ ...form, limit: Math.min(300, Math.max(10, Number(e.target.value) || 10)) })}
+                onChange={(e) => setForm({ ...form, limit: Math.min(MAX_CLIENTES, Math.max(10, Number(e.target.value) || 10)) })}
                 onKeyDown={(e) => e.key === 'Enter' && buscar()} />
-              {[20, 50, 100, 200].map((n) => (
+              {[50, 100, 200, 300, 500].map((n) => (
                 <button key={n} type="button" className={`chip ${form.limit === n ? 'on' : ''}`} title={`${n} clientes maximos`}
                   onClick={() => setForm({ ...form, limit: n })}>{n}</button>
               ))}
@@ -366,12 +380,33 @@ export default function Localizacion({ settings, navigate, id }) {
                 ))}
               </div>
               {resultado && resultado.total > (mostrados || resultado.limite) && (
-                <div style={{ padding: 12, textAlign: 'center' }}>
-                  <div className="small muted" style={{ marginBottom: 8 }}>
-                    Mostrando {filtrados.length} de {resultado.total} negocios encontrados
+                <div className="alert info" style={{ margin: 12, marginBottom: 0, display: 'block' }}>
+                  <div className="row row-tight" style={{ justifyContent: 'space-between', flexWrap: 'wrap' }}>
+                    <div>
+                      <b>Mostrando {filtrados.length} de {resultado.total} negocios encontrados</b>
+                      <div className="tiny muted">
+                        La búsqueda analiza más negocios de los que se muestran en pantalla para que
+                        el listado no se llene de miles de filas.
+                      </div>
+                    </div>
                   </div>
-                  <button className="btn block soft" onClick={verMas} disabled={buscando}>
-                    {buscando ? <span className="spinner" /> : '➕'} Ver más clientes ({Math.min(60, resultado.total - (mostrados || resultado.limite))} más)
+                  <div className="row row-tight" style={{ marginTop: 8, flexWrap: 'wrap' }}>
+                    <button className="btn primary sm" onClick={verTodos} disabled={buscando}>
+                      {buscando ? <span className="spinner" /> : '👁'} Ver los {resultado.total} negocios
+                    </button>
+                    <button className="btn soft sm" onClick={verMas} disabled={buscando}>
+                      ➕ Cargar más ({Math.min(MAX_CLIENTES, resultado.total) - (mostrados || resultado.limite)} más)
+                    </button>
+                  </div>
+                </div>
+              )}
+              {resultado && resultado.radioAmpliado && (
+                <div className="alert warning" style={{ margin: 12, marginBottom: 0 }}>
+                  📡 No había negocios de «{resultado.categoria.label}» en {resultado.radioSolicitado} km,
+                  así que la búsqueda se ha ampliado automáticamente hasta {resultado.radio} km.
+                  <button className="btn sm ghost" style={{ marginLeft: 8 }}
+                    onClick={() => { setForm((f) => ({ ...f, radius: resultado.radio })); setResultado(null); }}>
+                    Dejar el radio en {resultado.radio} km
                   </button>
                 </div>
               )}

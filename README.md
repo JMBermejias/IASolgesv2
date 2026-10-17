@@ -161,6 +161,24 @@ npm run arch            # dist-pkg/iasolges-v2-<version>-x86_64.pkg.tar.zst
 
 ---
 
+### Cómo se buscan los clientes
+
+La búsqueda combina **dos fuentes públicas en paralelo**:
+
+- **Overpass API**: todos los negocios con etiquetas OSM en el radio (tiendas, talleres, oficinas,
+  clínicas, etc.).
+- **Nominatim**: oficios y palabras clave (*peluquería, gestoría, fontanería, inmobiliaria…*)
+  acotados al área mediante `viewbox`, respetando su política de uso (1 consulta por segundo).
+
+Los resultados se combinan, se eliminan duplicados y se descartan los elementos que no son
+negocios (calles, plazas, el propio municipio, edificios sin actividad). Si un sector concreto no
+devuelve nada en el radio pedido, la búsqueda amplía el radio por pasos y lo indica en pantalla.
+
+Por defecto se muestran **150 clientes** (configurable hasta 500) y, si hay más, aparece el botón
+**"Ver los N negocios"** para traer el resto.
+
+---
+
 ## Estructura del proyecto
 
 ```

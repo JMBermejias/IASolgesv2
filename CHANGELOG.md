@@ -2,6 +2,24 @@
 
 Todas las novedades de IASolges.v2.
 
+## [2.0.15] - 2026-10-17
+
+### Corregido
+- **La búsqueda de clientes devuelve muchos más negocios.** Antes solo se mostraban 60 de los
+  encontrados aunque la lista tuviera cientos; ahora el máximo por defecto son **150** (hasta 500)
+  y aparece un botón destacado **"Ver los N negocios"** que trae el resto, no un discreto
+  "Ver más (+60)".
+- **Se descartan los elementos que no son negocios**: el propio pueblo, calles, carreteras,
+  plazas, parques y edificios sin actividad ya no aparecen como posibles clientes.
+- **Dos fuentes de datos en paralelo**: Overpass (etiquetas OSM) y Nominatim (oficios y palabras
+  clave) se consultan a la vez y se combinan, de modo que la búsqueda ya no depende de un único
+  servidor público. Antes, un espejo saturado devolvía 0-3 resultados para sectores como
+  "Servicios profesionales"; ahora se recuperan con la otra fuente.
+- Si un espejo falla, se reintenta el mismo radio y después se amplía por pasos, avisando en la
+  interfaz del radio realmente usado (`radioAmpliado`).
+- Se respetan los tiempos de espera de Nominatim y se cancela su consulta en cuanto la búsqueda
+  ya tiene suficientes resultados.
+
 ## [2.0.14] - 2026-10-17
 
 ### Anadido

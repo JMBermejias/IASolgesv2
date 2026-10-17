@@ -245,28 +245,120 @@ async function overpass(query, maxEndpoints = OVERPASS.length, timeoutMs = 45000
   throw ultimoError || new Error('Overpass no disponible');
 }
 
-/** Alternativa cuando Overpass no responde: POIs de Nominatim por palabra clave + lugar */
-async function nominatimPois({ center, category, limit, timeoutMs = 12000 }) {
+/**
+ * Palabras clave con las que se busca en Nominatim cuando Overpass no basta.
+ * Están elegidas por ser oficios y negocios habituales de cualquier ciudad
+ * española, que es justo lo que busca un comercial autonomo.
+ */
+const PALABRAS_AMPLIAS = [
+  'peluqueria', 'bar', 'cafe', 'restaurante', 'panaderia', 'carniceria', 'fruteria',
+  'supermercado', 'tienda', 'estetica', 'fisioterapia', 'dentista', 'farmacia',
+  'veterinario', 'psicologia', 'abogado', 'gestoria', 'asesoria', 'inmobiliaria',
+  'seguros', 'viajes', 'lavanderia', 'floristeria', 'cerrajeria', 'fontaneria',
+  'electricista', 'carpinteria', 'reformas', 'autoescuela', 'academia', 'gimnasio'
+];
+
+const PALABRAS_POR_SECTOR = {
+  restaurantes: ['restaurante', 'bar', 'cafe', 'pizzeria'],
+  comercios: ['tienda', 'supermercado', 'panaderia', 'fruteria', 'moda'],
+  servicios: ['gestoria', 'asesoria', 'abogado', 'inmobiliaria', 'reformas'],
+  salud: ['dentista', 'fisioterapia', 'veterinario', 'farmacia', 'clinica'],
+  belleza: ['peluqueria', 'estetica', 'masajes'],
+  talleres: ['taller', 'motor', 'electricista', 'cerrajeria', 'fontaneria'],
+  inmuebles: ['inmobiliaria', 'seguros', 'banco'],
+  educacion: ['academia', 'autoescuela', 'colegio', 'guarderia'],
+  deporte: ['gimnasio', 'padel', 'futbol', 'piscina'],
+  logistica: ['transportes', 'almacen', 'logistica'],
+  agencias: ['viajes', 'seguros', 'banco', 'inmobiliaria'],
+  pequenas: PALABRAS_AMPLIAS,
+  todos: PALABRAS_AMPLIAS
+};
+
+/**
+ * Nombres que son calles o direcciones, no negocios. Nominatim tambien devuelve
+ * los nombres de las vias ("Avenida de Chapí"), que no son clientes posibles.
+ * Solo se descartan cuando el nombre EMPIEZA por el tipo de vía, para no
+ * confundir con negocios como "Peluquería Plaza Mayor".
+ */
+const RE_CALLE = /^\s*\d{0,4}\s*(calle|cal|avenida|avda|av|paseo|plaza|plaça|pla|carretera|carrer|camino|carretera|poligono|polígono|parque|parking|apartamento|vivienda|mansion|mansión|travesia|travesía|ronda|muelle|puerto|barrio|residencial|urbanizacion|urbanización)\b/i;
+
+/**
+ * Alternativa y complemento cuando Overpass no responde: POIs de Nominatim
+ * buscados por oficios y palabras clave, acotados al radio mediante `viewbox`.
+ * Las consultas son secuenciales y espaciadas, como pide la política de uso de
+ * Nominatim, y se detienen en cuanto se agota el tiempo disponible.
+ */
+async function nominatimPois({ center, category, limit, timeoutMs = 12000, radioKm = 5, palabras = null, maxMs = 20000, cancel = null }) {
   const cat = categoryById(category);
-  const palabra = (cat.id === 'todos' ? 'comercio' : cat.label.toLowerCase().split(' ')[0]);
-  const lugar = String(center.label || '').split(',').slice(0, 2).join(',').trim();
-  const url = `${NOMINATIM}/search?format=jsonv2&addressdetails=1&extratags=1&limit=${Math.min(50, limit)}&countrycodes=es&q=${encodeURIComponent(`${palabra} ${lugar}`)}`;
-  const data = await fetchRetry(url, { headers: { 'User-Agent': userAgent(), 'Accept-Language': 'es' } }, { intentos: 2, timeoutMs });
-  return (data || []).map((r) => ({
-    type: 'node',
-    id: r.osm_id,
-    osmType: r.osm_type,
-    lat: parseFloat(r.lat),
-    lon: parseFloat(r.lon),
-    name: r.name || r.display_name.split(',')[0],
-    tags: {
-      ...(r.extratags || {}),
-      name: r.name,
-      shop: r.category === 'shop' ? r.type : undefined,
-      amenity: r.category === 'amenity' ? r.type : undefined,
-      ...(r.address || {})
+  const lista = palabras || PALABRAS_POR_SECTOR[cat.id] || [cat.label.toLowerCase().split(' ')[0]];
+  const lugar = String(center.label || '').split(',')[0].trim();
+  const porConsulta = Math.min(50, Math.max(10, Math.ceil((limit || 50) / Math.max(1, lista.length)) + 10));
+
+  // Recuadro de búsqueda equivalente al radio pedido
+  const dLat = radioKm / 111.32;
+  const dLon = radioKm / (111.32 * Math.cos((center.lat * Math.PI) / 180) || 1);
+  const viewbox = `${center.lon - dLon},${center.lat - dLat},${center.lon + dLon},${center.lat + dLat}`;
+
+  const encontrados = [];
+  const vistos = new Set();
+  const fin = Date.now() + maxMs;
+
+  for (const palabra of lista) {
+    if (Date.now() > fin || cancel?.valor) break;
+    const base = `${NOMINATIM}/search?format=jsonv2&addressdetails=1&extratags=1&limit=${porConsulta}&countrycodes=es`;
+
+    // 1) palabra clave acotada al area (funciona mejor que "palabra + localidad")
+    let data = [];
+    try {
+      // eslint-disable-next-line no-await-in-loop
+      data = await fetchRetry(`${base}&viewbox=${viewbox}&bounded=1&q=${encodeURIComponent(palabra)}`,
+        { headers: { 'User-Agent': userAgent(), 'Accept-Language': 'es' } }, { intentos: 1, timeoutMs });
+    } catch (_) { /* Nominatim también puede saturarse: se continúa con la siguiente palabra */ }
+
+    // 2) si la palabra suelta no da nada, se prueba con el nombre de la localidad
+    if (!Array.isArray(data) || !data.length) {
+      try {
+        // eslint-disable-next-line no-await-in-loop
+        data = await fetchRetry(`${base}&q=${encodeURIComponent(`${palabra} ${lugar}`)}`,
+          { headers: { 'User-Agent': userAgent(), 'Accept-Language': 'es' } }, { intentos: 1, timeoutMs });
+      } catch (_) { /* sin datos para esta palabra */ }
     }
-  }));
+
+    for (const r of Array.isArray(data) ? data : []) {
+      const lat = parseFloat(r.lat);
+      const lon = parseFloat(r.lon);
+      if (!Number.isFinite(lat) || !Number.isFinite(lon)) continue;
+      if (haversine(center, { lat, lon }) > radioKm) continue;
+      const nombre = String(r.name || String(r.display_name || '').split(',')[0]).trim();
+      if (!nombre || RE_CALLE.test(nombre)) continue;
+      const clave = `${nombre.toLowerCase()}|${lat.toFixed(4)}|${lon.toFixed(4)}`;
+      if (vistos.has(clave)) continue;
+      vistos.add(clave);
+      encontrados.push({
+        type: 'node',
+        id: r.osm_id,
+        osmType: r.osm_type,
+        lat,
+        lon,
+        name: nombre,
+        tags: {
+          ...(r.extratags || {}),
+          ...(r.address || {}),
+          name: nombre,
+          keyword: palabra,
+          shop: r.category === 'shop' ? r.type : undefined,
+          amenity: r.category === 'amenity' ? r.type : undefined
+        }
+      });
+    }
+
+    // Nominatim limita a una consulta por segundo: se respeta su politica de uso
+    // eslint-disable-next-line no-await-in-loop
+    await new Promise((r) => setTimeout(r, 1100));
+    if (cancel?.valor) break;
+  }
+
+  return encontrados;
 }
 
 function haversine(a, b) {
@@ -325,6 +417,8 @@ function analyseClient(poi, ctx) {
   // 2. Sector / actividad
   let sector = 40;
   if (tags.shop || tags.amenity || tags.craft || tags.office || tags.leisure) sector = 75;
+  // Negotios localizados por palabra clave (oficio real encontrado en Nominatim)
+  if (tags.keyword) sector = Math.max(sector, 70);
   if (tags.website) sector += 15;
   if (tags.brand) sector += 10;
   sector = Math.min(100, sector);
@@ -364,7 +458,7 @@ function analyseClient(poi, ctx) {
   return {
     id: `osm_${poi.osmType || 'node'}_${poi.id}`,
     nombre: poi.name || tags.name || tags.brand || 'Negocio sin nombre',
-    categoria: tags.shop || tags.amenity || tags.craft || tags.office || tags.leisure || tags.industrial || 'comercio',
+    categoria: tags.shop || tags.amenity || tags.craft || tags.office || tags.leisure || tags.industrial || tags.keyword || 'comercio',
     direccion: labelFromTags(tags, poi.type, center),
     lat: poi.lat,
     lon: poi.lon,
@@ -440,7 +534,7 @@ async function consultarEnParalelo(consultas, { timeoutMs = 12000, maxSimultanea
  */
 async function search({ query, lat, lon, radius = 5, category = 'todos', limit, incluirPequenos = true }) {
   // Cantidad máxima de clientes que se muestran (10 a 300)
-  const maxClientes = Math.min(300, Math.max(10, parseInt(limit, 10) || 60));
+  const maxClientes = Math.min(500, Math.max(10, parseInt(limit, 10) || 150));
   // Se piden bastantes elementos por consulta para conocer de sobra cuántos negocios
   // hay en la zona y poder devolver los más cercanos hasta el límite pedido.
   const pool = Math.min(1000, Math.max(maxClientes * 4, 400));
@@ -464,32 +558,94 @@ async function search({ query, lat, lon, radius = 5, category = 'todos', limit, 
   let motor = 'overpass';
   let elementos = [];
 
+  let radioUsado = radius;
+  let ampliacion = 0;
+
+  // Segunda fuente de datos en PARALELO: Nominatim busca por oficios y palabras
+  // clave mientras Overpass consulta por etiquetas OSM. Al ser independientes,
+  // el resultado no depende de que un servidor publico falle.
+  const cancelNominatim = { valor: false };
+  const tareaNominatim = (async () => {
+    try {
+      return await nominatimPois({
+        center,
+        category,
+        limit: Math.min(400, Math.max(maxClientes * 2, 80)),
+        timeoutMs: Math.min(10000, restante()),
+        radioKm: radius,
+        maxMs: Math.max(8000, Math.min(35000, restante() - 25000)),
+        palabras: PALABRAS_POR_SECTOR[cat.id],
+        cancel: cancelNominatim
+      });
+    } catch (_) { return []; }
+  })();
+
   try {
     elementos = await consultarEnParalelo(consultas, { presupuestoMs: Math.min(60000, restante()) });
-    if (!elementos.length && !SECTORES_AMPLIOS.includes(cat.id)) {
-      // sin resultados en el radio: ampliamos automáticamente una vez
-      consultas = buildOverpassQueries(cat, center.lat, center.lon, Math.min(radius * 2.5, 40), pool, incluirPequenos);
-      elementos = await consultarEnParalelo(consultas, { presupuestoMs: Math.min(60000, restante()) });
+
+    if (!elementos.length) {
+      // Un cero puede deberse a un espejo saturado: se reintenta el MISMO radio
+      // para dar otra oportunidad a los servidores antes de ampliar la zona.
+      elementos = await consultarEnParalelo(consultas, { presupuestoMs: Math.min(15000, restante()) });
+    }
+
+    if (!elementos.length) {
+      // Sigue sin resultados: se amplía el radio por pasos hasta agotar el tiempo
+      // disponible, para que un sector concreto no devuelva una lista vacía.
+      for (const r of [Math.min(radius * 2.5, 40), Math.min(radius * 5, 40)]) {
+        if (Date.now() - inicio > 60000) break;
+        consultas = buildOverpassQueries(cat, center.lat, center.lon, r, pool, incluirPequenos);
+        const mas = await consultarEnParalelo(consultas, { presupuestoMs: Math.min(20000, restante()) });
+        if (mas.length) {
+          elementos = mas;
+          radioUsado = r;
+          ampliacion = Math.round(r);
+          break;
+        }
+      }
     }
   } catch (e) {
     motor = 'nominatim';
   }
 
-  // Plan B: si los servidores de Overpass no dan nada, se usa Nominatim por palabras clave
-  if (!elementos.length) {
-    try {
-      elementos = await nominatimPois({ center, category, limit: Math.min(400, pool), timeoutMs: Math.min(15000, restante()) });
-      if (elementos.length) motor = 'nominatim';
-    } catch (_) { /* sin alternativas disponibles */ }
-  }
+  // Normalización: coordenadas válidas, con nombre y que sean realmente negocios.
+  const nombreLugar = String(center.label || '').split(',')[0].trim();
+  const sinAcentos = (s) => String(s || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+  const nombreLugarPlano = sinAcentos(nombreLugar).toLowerCase();
 
-  // Normalización de coordenadas
-  elementos = elementos.map((el) => {
+  const normalizar = (lista) => lista.map((el) => {
     const lat2 = el.lat ?? el.center?.lat;
     const lon2 = el.lon ?? el.center?.lon;
     return { ...el, lat: lat2, lon: lon2 };
-  }).filter((el) => typeof el.lat === 'number' && typeof el.lon === 'number'
-    && (el.tags?.name || el.tags?.brand || el.tags?.operator));
+  }).filter((el) => {
+    if (typeof el.lat !== 'number' || typeof el.lon !== 'number') return false;
+    const t = el.tags || {};
+    const nombre = t.name || t.brand || t.operator;
+    if (!nombre) return false;
+    // Lugares, calles, carreteras,/edificios sin actividad: no son clientes
+    if (t.place || t.boundary || t.highway || t.railway || t.aeroway || t.waterway
+      || t.man_made || t.natural || t.landuse === 'residential' || t.area === 'yes') return false;
+    if (nombreLugarPlano && sinAcentos(nombre).trim().toLowerCase() === nombreLugarPlano) return false;
+    return true;
+  });
+
+  elementos = normalizar(elementos);
+
+  // Plan B y refuerzo: si Overpass no ha dado negocios utilizables, o se ha quedado
+  // corto con respecto a lo pedido, se completa la lista con Nominatim por oficios.
+  // Así el resultado no depende de un único servicio público (y ambos se saturan).
+  const faltan = maxClientes - elementos.length;
+  const haceFaltaNominatim = restante() > 8000 && (elementos.length === 0 || (faltan > 0 && incluirPequenos));
+  if (!haceFaltaNominatim) cancelNominatim.valor = true; // no se malgasta cuota de Nominatim
+  if (haceFaltaNominatim) {
+    const extra = await tareaNominatim;
+    if (extra.length) {
+      const antes = elementos.length;
+      elementos = elementos.concat(normalizar(extra));
+      if (elementos.length === antes) motor = 'nominatim';
+      else motor = 'overpass+nominatim';
+    }
+  }
 
   elementos.forEach((el) => { el.distanceKm = haversine(center, { lat: el.lat, lon: el.lon }); });
 
@@ -506,7 +662,7 @@ async function search({ query, lat, lon, radius = 5, category = 'todos', limit, 
   }
 
   const clientes = sinDuplicados.slice(0, maxClientes).map((el, i) =>
-    analyseClient(el, { radius, center, totalFound: sinDuplicados.length, index: i })
+    analyseClient(el, { radius: radioUsado, center, totalFound: sinDuplicados.length, index: i })
   );
 
   return {
@@ -514,7 +670,9 @@ async function search({ query, lat, lon, radius = 5, category = 'todos', limit, 
     candidatos,
     categoria: { id: cat.id, label: cat.label },
     total: sinDuplicados.length,
-    radio: radius,
+    radio: radioUsado,
+    radioSolicitado: radius,
+    radioAmpliado: ampliacion > 0,
     motor,
     limite: maxClientes,
     incluidosPequenos: Boolean(incluirPequenos) && SECTORES_AMPLIOS.includes(cat.id),
