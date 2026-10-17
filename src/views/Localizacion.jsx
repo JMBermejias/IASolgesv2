@@ -13,6 +13,7 @@ export default function Localizacion({ settings, navigate, id }) {
   const [resultado, setResultado] = useState(null);
   const [buscando, setBuscando] = useState(false);
   const [areaAbierta, setAreaAbierta] = useState(false);
+  const [mostrados, setMostrados] = useState(0);   // cuantos de los encontrados se muestran
   const [sel, setSel] = useState([]);
   const [filtro, setFiltro] = useState('');
   const [detalle, setDetalle] = useState(null);
@@ -38,13 +39,19 @@ export default function Localizacion({ settings, navigate, id }) {
     return () => clearInterval(t);
   }, [buscando]);
 
-  const buscar = async () => {
+  const buscar = async (limiteForzado) => {
+    // Solo se acepta un limite numerico: si el boton invoca la funcion directamente
+    // React le pasa el evento del clic y eso rompia la busqueda.
+    const limite = Number.isFinite(Number(limiteForzado)) && Number(limiteForzado) > 0
+      ? Math.min(300, Math.max(10, Number(limiteForzado)))
+      : Math.min(300, Math.max(10, Number(form.limit) || 60));
     // El area de trabajo (mapa + listado) se abre al instante, antes de tener datos
     setAreaAbierta(true);
+    setMostrados(limite);
     setBuscando(true);
     setAnalisis(null);
     try {
-      const r = await api.customers.search(form);
+      const r = await api.customers.search({ ...form, limit: limite });
       setResultado(r);
       setCenter(r.center);
       setSel([]);
@@ -60,10 +67,23 @@ export default function Localizacion({ settings, navigate, id }) {
 
   const filtrados = useMemo(() => {
     if (!resultado) return [];
-    const q = filtro.toLowerCase();
-    return resultado.clientes.filter((c) =>
-      !q || c.nombre.toLowerCase().includes(q) || (c.categoria || '').toLowerCase().includes(q) || c.direccion.toLowerCase().includes(q));
-  }, [resultado, filtro]);
+    const q = filtro.toLowerCase().trim();
+    const todos = resultado.clientes.filter((c) =>
+      !q || c.nombre.toLowerCase().includes(q) || (c.categoria || '').toLowerCase().includes(q) || (c.direccion || '').toLowerCase().includes(q));
+    const limite = mostrados || resultado.limite;
+    return todos.slice(0, limite);
+  }, [resultado, filtro, mostrados]);
+
+  /** Amplia el listado: si no hay resultados suficientes, vuelve a consultar con mas limite */
+  const verMas = async () => {
+    if (!resultado) return;
+    const siguiente = Math.min(300, (mostrados || resultado.limite) + 60);
+    setMostrados(siguiente);
+    if (siguiente > resultado.clientes.length) {
+      setForm((f) => ({ ...f, limit: siguiente }));
+      await buscar(siguiente);
+    }
+  };
 
   const toggle = (c) => setSel((prev) => (prev.find((x) => x.id === c.id) ? prev.filter((x) => x.id !== c.id) : [...prev, c]));
 
@@ -199,7 +219,7 @@ export default function Localizacion({ settings, navigate, id }) {
             </div>
           </Field>
           <div className="row row-tight">
-            <button className="btn primary lg" onClick={buscar} disabled={buscando}>
+            <button className="btn primary lg" onClick={() => buscar()} disabled={buscando}>
               {buscando ? <span className="spinner" /> : '🔍'} Buscar
             </button>
           </div>
@@ -242,7 +262,7 @@ export default function Localizacion({ settings, navigate, id }) {
                     `${resultado.total} negocios encontrados`,
                     resultado.sectorEstricto ? `sector: ${resultado.categoria.label}` : 'todos los sectores',
                     resultado.incluidosPequenos ? 'incluye pequeñas empresas y autónomos' : null,
-                    resultado.truncado ? `mostrando los ${resultado.clientes.length} más cercanos (máximo configurado: ${resultado.limite})` : null
+                    resultado.truncado ? `mostrando los ${filtrados.length} más cercanos de ${resultado.total}` : null
                   ].filter(Boolean).join(' · ')
                   : sectorAmplio
                     ? 'Pulsa Buscar para localizar clientes'
@@ -345,6 +365,16 @@ export default function Localizacion({ settings, navigate, id }) {
                   </div>
                 ))}
               </div>
+              {resultado && resultado.total > (mostrados || resultado.limite) && (
+                <div style={{ padding: 12, textAlign: 'center' }}>
+                  <div className="small muted" style={{ marginBottom: 8 }}>
+                    Mostrando {filtrados.length} de {resultado.total} negocios encontrados
+                  </div>
+                  <button className="btn block soft" onClick={verMas} disabled={buscando}>
+                    {buscando ? <span className="spinner" /> : '➕'} Ver más clientes ({Math.min(60, resultado.total - (mostrados || resultado.limite))} más)
+                  </button>
+                </div>
+              )}
             </Card>
           </div>
 
@@ -388,7 +418,7 @@ export default function Localizacion({ settings, navigate, id }) {
         <Card>
           <Empty icon="📍" title="Busca clientes en el mapa"
             text="Introduce una ubicación y un sector. El sistema listara los negocios del area con sus datos de contacto y la probabilidad de contratacion segun distintos medios de análisis."
-            action={<button className="btn primary" onClick={buscar}>🔍 Empezar la búsqueda</button>} />
+            action={<button className="btn primary" onClick={() => buscar()}>🔍 Empezar la búsqueda</button>} />
         </Card>
       )}
 

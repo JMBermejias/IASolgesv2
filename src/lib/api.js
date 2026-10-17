@@ -51,7 +51,17 @@ export const api = {
     categories: () => unwrap(window.api.customers.categories()),
     geocode: (q) => unwrap(window.api.customers.geocode(q)),
     reverse: (a, b) => unwrap(window.api.customers.reverse(a, b)),
-    search: (a) => unwrap(window.api.customers.search(a)),
+    // Se envía una copia plana y serializable: Electron no puede clonar objetos
+    // con referencias a elementos del formulario (error "An object could not be cloned").
+    search: (a) => unwrap(window.api.customers.search(JSON.parse(JSON.stringify({
+      query: String(a?.query ?? ''),
+      category: String(a?.category ?? 'todos'),
+      radius: Number(a?.radius ?? 3),
+      limit: Number(a?.limit ?? 60),
+      incluirPequenos: a?.incluirPequenos !== false,
+      lat: Number.isFinite(Number(a?.lat)) ? Number(a.lat) : undefined,
+      lon: Number.isFinite(Number(a?.lon)) ? Number(a.lon) : undefined
+    })))),
     analysisPrompt: (a) => unwrap(window.api.customers.analysisPrompt(a)),
     save: (c, e) => unwrap(window.api.customers.save(c, e))
   },

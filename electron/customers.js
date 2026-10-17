@@ -89,10 +89,10 @@ async function fetchRetry(url, options = {}, { intentos = 3, esperaMs = 900, tim
 }
 
 /** Geocodificacion de texto a coordenadas (Nominatim) */
-async function geocode(query) {
+async function geocode(query, timeoutMs) {
   if (!query) throw new Error('Consulta vacia');
   const url = `${NOMINATIM}/search?format=jsonv2&addressdetails=1&limit=8&q=${encodeURIComponent(query)}`;
-  const data = await fetchRetry(url, { headers: { 'User-Agent': userAgent(), 'Accept-Language': 'es' } }, { intentos: 4 });
+  const data = await fetchRetry(url, { headers: { 'User-Agent': userAgent(), 'Accept-Language': 'es' } }, { intentos: 2, timeoutMs: timeoutMs || 12000 });
   return (data || []).map((r) => ({
     label: r.display_name,
     lat: parseFloat(r.lat),
@@ -127,21 +127,8 @@ async function reverse(lat, lon) {
  * para quedarse con los MÁS CERCANOS tras ordenar, en lugar de los que el servidor
  * entregue por azar.
  */
-function buildOverpassQuery(cat, lat, lon, radiusKm, pool, incluirPequenos = false) {
-  const radius = Math.max(100, Math.round(radiusKm * 1000)); // Overpass trabaja en metros
+function clausesDeEtiquetas(tags, radius, lat, lon) {
   const clauses = [];
-  const tags = { ...cat.tags };
-
-  // El modo amplio solo se aplica si NO hay un sector concreto que respetar
-  const sectorEstricto = !SECTORES_AMPLIOS.includes(cat.id);
-  if (incluirPequenos && !sectorEstricto) {
-    for (const extra of ETIQUETAS_PEQUENOS) {
-      for (const [k, v] of Object.entries(extra)) {
-        if (!tags[k]) tags[k] = v.includes('*') ? ['*'] : [...(tags[k] || []), ...v];
-      }
-    }
-  }
-
   const vistos = new Set();
   for (const [key, values] of Object.entries(tags)) {
     const firma = `${key}:${values.join('|')}`;
@@ -149,7 +136,6 @@ function buildOverpassQuery(cat, lat, lon, radiusKm, pool, incluirPequenos = fal
     vistos.add(firma);
 
     if (key === '*') {
-      // cualquier elemento con nombre propio
       clauses.push(`  node["name"](around:${radius},${lat},${lon});`);
       clauses.push(`  way["name"](around:${radius},${lat},${lon});`);
       continue;
@@ -165,10 +151,58 @@ function buildOverpassQuery(cat, lat, lon, radiusKm, pool, incluirPequenos = fal
       clauses.push(`  relation["${key}"~"${re}"](around:${radius},${lat},${lon});`);
     }
   }
-  return `[out:json][timeout:90];(\n${clauses.join('\n')}\n);out center ${pool};`;
+  return clauses;
 }
 
-async function overpass(query, maxEndpoints = OVERPASS.length) {
+/**
+ * Construye las consultas de Overpass.
+ *
+ * Se generan VARIAS consultas en lugar de una gigante: una por bloque de etiquetas.
+ * Así el servidor trabaja con consultas más ligeras y se pueden lanzar en paralelo,
+ * lo que devuelve muchos más negocios y en menos tiempo.
+ *
+ * - El sector elegido es un filtro ESTRICTO en su propia consulta.
+ * - El bloque de pequeños negocios y autónomos va en consultas aparte y solo se añade
+ *   cuando no hay un sector concreto que respetar.
+ */
+function buildOverpassQueries(cat, lat, lon, radiusKm, pool, incluirPequenos = false) {
+  const radius = Math.max(100, Math.round(radiusKm * 1000)); // Overpass trabaja en metros
+  const sectorEstricto = !SECTORES_AMPLIOS.includes(cat.id);
+
+  const consultas = [];
+  const sector = clausesDeEtiquetas(cat.tags, radius, lat, lon);
+  if (sector.length) {
+    consultas.push(`[out:json][timeout:60];(\n${sector.join('\n')}\n);out center ${pool};`);
+  }
+
+  if (incluirPequenos && !sectorEstricto) {
+    // Cada bloque por separado: consultas mas rapidas y se ejecutan en paralelo
+    const bloques = [
+      { shop: ['*'] },
+      { craft: ['*'] },
+      { office: ['*'] },
+      { healthcare: ['*'] },
+      { service: ['*'] },
+      { amenity: ['*'] },
+      { building: ['commercial', 'retail', 'office', 'service', 'craft'] }
+    ];
+    for (const bloque of bloques) {
+      const claves = clausesDeEtiquetas(bloque, radius, lat, lon);
+      if (claves.length) {
+        consultas.push(`[out:json][timeout:60];(\n${claves.join('\n')}\n);out center ${pool};`);
+      }
+    }
+  }
+
+  return consultas;
+}
+
+/** Consulta única (se mantiene por compatibilidad) */
+function buildOverpassQuery(cat, lat, lon, radiusKm, pool, incluirPequenos = false) {
+  return buildOverpassQueries(cat, lat, lon, radiusKm, pool, incluirPequenos)[0];
+}
+
+async function overpass(query, maxEndpoints = OVERPASS.length, timeoutMs = 45000) {
   const endpoints = OVERPASS.slice(0, maxEndpoints);
   let ultimoError = null;
 
@@ -182,7 +216,7 @@ async function overpass(query, maxEndpoints = OVERPASS.length) {
       method: 'POST',
       headers: { 'Content-Type': 'application/x-www-form-urlencoded', 'User-Agent': userAgent() },
       body: 'data=' + encodeURIComponent(query)
-    }, { intentos: 1, timeoutMs: 45000 }).then((json) => {
+    }, { intentos: 1, timeoutMs }).then((json) => {
       if (!json || !Array.isArray(json.elements)) throw new Error('Respuesta Overpass invalida');
       if (json.elements.length) conDatos.push({ endpoint, json });
       else if (!inmediato.json) inmediato.json = json;
@@ -212,12 +246,12 @@ async function overpass(query, maxEndpoints = OVERPASS.length) {
 }
 
 /** Alternativa cuando Overpass no responde: POIs de Nominatim por palabra clave + lugar */
-async function nominatimPois({ center, category, limit }) {
+async function nominatimPois({ center, category, limit, timeoutMs = 12000 }) {
   const cat = categoryById(category);
   const palabra = (cat.id === 'todos' ? 'comercio' : cat.label.toLowerCase().split(' ')[0]);
   const lugar = String(center.label || '').split(',').slice(0, 2).join(',').trim();
   const url = `${NOMINATIM}/search?format=jsonv2&addressdetails=1&extratags=1&limit=${Math.min(50, limit)}&countrycodes=es&q=${encodeURIComponent(`${palabra} ${lugar}`)}`;
-  const data = await fetchRetry(url, { headers: { 'User-Agent': userAgent(), 'Accept-Language': 'es' } }, { intentos: 3 });
+  const data = await fetchRetry(url, { headers: { 'User-Agent': userAgent(), 'Accept-Language': 'es' } }, { intentos: 2, timeoutMs });
   return (data || []).map((r) => ({
     type: 'node',
     id: r.osm_id,
@@ -351,13 +385,13 @@ function analyseClient(poi, ctx) {
  * Afina el centro cuando Nominatim devuelve el centroide del municipio:
  * busca el nucleo urbano real (place=city|town|village) mas cercano.
  */
-async function refineCenter(center, query) {
+async function refineCenter(center, query, timeoutMs = 12000) {
   const palabra = String(query || '').split(',')[0].trim();
   if (!palabra) return center;
   const re = palabra.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
   const q = `[out:json][timeout:20];node["place"~"^(city|town|village|hamlet)$"]["name"~"^${re}$",i](around:30000,${center.lat},${center.lon});out center 5;`;
   try {
-    const json = await overpass(q, 1);
+    const json = await overpass(q, 2, timeoutMs);
     const els = (json.elements || []).filter((e) => typeof e.lat === 'number');
     if (!els.length) return center;
     els.sort((a, b) => haversine(center, { lat: a.lat, lon: a.lon }) - haversine(center, { lat: b.lat, lon: b.lon }));
@@ -369,74 +403,101 @@ async function refineCenter(center, query) {
 }
 
 /**
+ * Lanza varias consultas de Overpass EN PARALELO y fusiona los resultados.
+ * Cada consulta es ligera, así que el servidor responde mucho antes que con una
+ * consulta gigante, y entre todas se conocen muchos más negocios.
+ */
+async function consultarEnParalelo(consultas, { timeoutMs = 12000, maxSimultaneas = 3, presupuestoMs = 60000 } = {}) {
+  const elementos = [];
+  const inicio = Date.now();
+
+  // Se lanzan por tandas y con un presupuesto de tiempo: Chromium (el proceso principal
+  // de Electron) limita las conexiones por servidor y serializa las peticiones al mismo
+  // host, de modo que lanzar todas las consultas a la vez solo añade espera.
+  for (let i = 0; i < consultas.length; i += maxSimultaneas) {
+    if (Date.now() - inicio > presupuestoMs) {
+      if (process.env.IASOLGES_DEBUG) {
+        console.log(`[overpass] presupuesto de tiempo alcanzado, se omiten ${consultas.length - i} consultas`);
+      }
+      break;
+    }
+    const tanda = consultas.slice(i, i + maxSimultaneas);
+    const restantes = presupuestoMs - (Date.now() - inicio);
+    const resultados = await Promise.allSettled(
+      tanda.map((q, k) => overpass(q, 2 + ((i + k) % 2), Math.min(timeoutMs, Math.max(8000, restantes))))
+    );
+    for (const r of resultados) {
+      if (r.status === 'fulfilled' && r.value?.elements?.length) elementos.push(...r.value.elements);
+    }
+  }
+  return elementos;
+}
+
+/**
  * Búsqueda completa de clientes potenciales alrededor de un punto.
- * Devuelve hasta `limit` clientes, priorizando los más cercanos e incluyendo
- * pequeños negocios y autónomos (en OSM aparecen con etiquetas muy diversas).
+ * Devuelve hasta `limit` clientes, ordenados por cercanía, e informa de cuántos
+ * encontró en total para que se vea si el resultado está recortado.
  */
 async function search({ query, lat, lon, radius = 5, category = 'todos', limit, incluirPequenos = true }) {
-  // Cantidad máxima de clientes solicitada por el usuario (10 a 300)
+  // Cantidad máxima de clientes que se muestran (10 a 300)
   const maxClientes = Math.min(300, Math.max(10, parseInt(limit, 10) || 60));
-  // Se piden más elementos de los que se van a mostrar, para poder ordenar por
-  // cercanía y descartar duplicados. Sin esto el servidor devuelve los que le salen
-  // y solo aparecen los negocios más conocidos.
-  const pool = Math.min(800, Math.max(maxClientes * 2, maxClientes + 40));
+  // Se piden bastantes elementos por consulta para conocer de sobra cuántos negocios
+  // hay en la zona y poder devolver los más cercanos hasta el límite pedido.
+  const pool = Math.min(1000, Math.max(maxClientes * 4, 400));
+
+  // Reloj global: ninguna fase puede dejar la pantalla esperando indefinidamente
+  const inicio = Date.now();
+  const restante = () => Math.max(4000, 90000 - (Date.now() - inicio));
+
   let center = { lat, lon, label: query || 'Punto seleccionado' };
   let candidatos = [];
   if (query && (lat === undefined || lon === undefined)) {
-    candidatos = await geocode(query);
+    candidatos = await geocode(query, Math.min(20000, restante()));
     if (!candidatos.length) throw new Error(`No se ha encontrado la ubicación "${query}"`);
     const prioridad = { city: 0, town: 1, village: 2, municipality: 3, borough: 4, suburb: 5, quarter: 6, neighbourhood: 7, hamlet: 8, isolated_dwelling: 9, farm: 10 };
     const mejor = [...candidatos].sort((a, b) => (prioridad[a.type] ?? 11) - (prioridad[b.type] ?? 11))[0];
-    center = await refineCenter({ lat: mejor.lat, lon: mejor.lon, label: mejor.label }, query);
+    center = await refineCenter({ lat: mejor.lat, lon: mejor.lon, label: mejor.label }, query, Math.min(15000, restante()));
   }
+
   const cat = categoryById(category);
-  const queryOsm = buildOverpassQuery(cat, center.lat, center.lon, radius, pool, incluirPequenos);
-  let raw;
+  let consultas = buildOverpassQueries(cat, center.lat, center.lon, radius, pool, incluirPequenos);
   let motor = 'overpass';
-  if (process.env.IASOLGES_DEBUG) console.log(`[overpass] consulta:\n${queryOsm}`);
+  let elementos = [];
+
   try {
-    raw = await overpass(queryOsm);
-    if (!raw.elements.length && category !== 'todos') {
+    elementos = await consultarEnParalelo(consultas, { presupuestoMs: Math.min(60000, restante()) });
+    if (!elementos.length && !SECTORES_AMPLIOS.includes(cat.id)) {
       // sin resultados en el radio: ampliamos automáticamente una vez
-      raw = await overpass(buildOverpassQuery(cat, center.lat, center.lon, Math.min(radius * 2.5, 40), pool, incluirPequenos));
+      consultas = buildOverpassQueries(cat, center.lat, center.lon, Math.min(radius * 2.5, 40), pool, incluirPequenos);
+      elementos = await consultarEnParalelo(consultas, { presupuestoMs: Math.min(60000, restante()) });
     }
   } catch (e) {
     motor = 'nominatim';
-    try {
-      const elements = await nominatimPois({ center, category, limit: maxClientes });
-      raw = { elements };
-    } catch (e2) {
-      throw new Error(`No se han podido obtener datos de localización: ${e2.message} (Overpass: ${e.message})`);
-    }
   }
 
-  // Si Overpass responde pero sin datos (servidor saturado o sin cobertura),
-  // se recurre a Nominatim antes de devolver un resultado vacio.
-  if (!raw.elements.length) {
+  // Plan B: si los servidores de Overpass no dan nada, se usa Nominatim por palabras clave
+  if (!elementos.length) {
     try {
-      const elements = await nominatimPois({ center, category, limit: maxClientes });
-      if (elements.length) {
-        raw = { elements };
-        motor = 'nominatim';
-        if (process.env.IASOLGES_DEBUG) console.log(`[overpass] sin datos, usando Nominatim: ${elements.length}`);
-      }
+      elementos = await nominatimPois({ center, category, limit: Math.min(400, pool), timeoutMs: Math.min(15000, restante()) });
+      if (elementos.length) motor = 'nominatim';
     } catch (_) { /* sin alternativas disponibles */ }
   }
 
-  const elements = (raw.elements || []).map((el) => {
+  // Normalización de coordenadas
+  elementos = elementos.map((el) => {
     const lat2 = el.lat ?? el.center?.lat;
     const lon2 = el.lon ?? el.center?.lon;
     return { ...el, lat: lat2, lon: lon2 };
   }).filter((el) => typeof el.lat === 'number' && typeof el.lon === 'number'
     && (el.tags?.name || el.tags?.brand || el.tags?.operator));
 
-  elements.forEach((el) => { el.distanceKm = haversine(center, { lat: el.lat, lon: el.lon }); });
+  elementos.forEach((el) => { el.distanceKm = haversine(center, { lat: el.lat, lon: el.lon }); });
 
   // Orden por cercanía y eliminación de duplicados (mismo nombre en el mismo punto)
-  elements.sort((a, b) => a.distanceKm - b.distanceKm);
+  elementos.sort((a, b) => a.distanceKm - b.distanceKm);
   const sinDuplicados = [];
   const firmas = new Set();
-  for (const el of elements) {
+  for (const el of elementos) {
     const nombre = (el.tags?.name || el.tags?.brand || el.tags?.operator || '').toLowerCase().trim();
     const firma = `${nombre}|${el.lat.toFixed(4)}|${el.lon.toFixed(4)}`;
     if (firmas.has(firma)) continue;

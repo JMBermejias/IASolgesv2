@@ -284,7 +284,15 @@ function registerIpc() {
   handle('customers:categories', () => customers.CATEGORIES);
   handle('customers:geocode', (q) => customers.geocode(q));
   handle('customers:reverse', (lat, lon) => customers.reverse(lat, lon));
-  handle('customers:search', (args) => customers.search(args));
+  handle('customers:search', async (args) => {
+    const t0 = Date.now();
+    if (process.env.IASOLGES_DEBUG) console.log('[ipc] customers:search recibido', JSON.stringify(args));
+    const r = await customers.search(args);
+    if (process.env.IASOLGES_DEBUG) {
+      console.log(`[busqueda] ${((Date.now() - t0) / 1000).toFixed(1)}s motor=${r.motor} total=${r.total} mostrados=${r.clientes.length} sector=${r.categoria.id}`);
+    }
+    return r;
+  });
   handle('customers:analysisPrompt', (args) => customers.buildAnalysisPrompt(args));
   handle('customers:save', (clientes, extra) => customers.saveSelected(clientes || [], extra || {}));
 

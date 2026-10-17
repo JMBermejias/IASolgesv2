@@ -2,6 +2,23 @@
 
 Todas las novedades de IASolges.v2.
 
+## [2.0.13] - 2026-10-17
+
+### Anadido
+- Botón **"Ver más clientes"** en el listado: amplía de 60 en 60 hasta 300 clientes sin repetir la
+  búsqueda a mano, indicando siempre cuántos se están mostrando de los encontrados.
+
+### Corregido
+- La búsqueda vuelve a devolver **todos los clientes posibles hasta el límite que marcas**. Antes,
+  el botón "Buscar" pasaba el evento del clic como límite (NaN), el listado quedaba vacío y solo se
+  conocían 111 negocios de la zona. Con el arreglo, en Novelda con radio de 3 km se detectan más de
+  300 negocios (se han medido 364 y 291 en distintas pruebas) y se muestran los más cercanos.
+- La búsqueda se hace ahora **con varias consultas pequeñas en paralelo** (una por bloque de
+  etiquetas: comercios, talleres, oficios, sanidad, locales y servicios) en vez de una consulta
+  gigante. Eso multiplica los resultados y **reduce el tiempo**: de unos 78 segundos a unos 25.
+- Todas las fases llevan **presupuesto de tiempo** (geocodificación, ajuste del centro, Overpass y
+  el respaldo en Nominatim) para que la pantalla nunca se quede esperando indefinidamente.
+
 ## [2.0.12] - 2026-10-16
 
 ### Corregido
