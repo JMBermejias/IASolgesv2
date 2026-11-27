@@ -12,14 +12,14 @@ function cfg() {
   return { user: g.user || 'jmbernabeu', owner, repo, token: g.token || '', url: g.url || `https://github.com/${owner}/${repo}` };
 }
 
-async function api(endpoint, { method = 'GET', body, raw = false } = {}) {
+async function api(endpoint, { method = 'GET', body, raw = false, noAuth = false } = {}) {
   const { token } = cfg();
   const headers = {
     Accept: 'application/vnd.github+json',
     'X-GitHub-Api-Version': '2022-11-28',
     'User-Agent': 'IASolges.v2'
   };
-  if (token) headers.Authorization = `Bearer ${token}`;
+  if (token && !noAuth) headers.Authorization = `Bearer ${token}`;
   if (body) headers['Content-Type'] = 'application/json';
 
   const res = await fetch(`https://api.github.com${endpoint}`, {
@@ -63,16 +63,27 @@ async function userInfo() {
   }
 }
 
+function mapReleases(data) {
+  return (data || []).map((r) => ({
+    tag: r.tag_name, name: r.name, publishedAt: r.published_at, prerelease: r.prerelease,
+    notes: r.body, url: r.html_url,
+    assets: (r.assets || []).map((a) => ({ name: a.name, size: a.size, url: a.browser_download_url, id: a.id }))
+  }));
+}
+
 async function listReleases() {
   const { owner, repo } = cfg();
+  const endpoint = `/repos/${owner}/${repo}/releases?per_page=10`;
   try {
-    const data = await api(`/repos/${owner}/${repo}/releases?per_page=10`);
-    return (data || []).map((r) => ({
-      tag: r.tag_name, name: r.name, publishedAt: r.published_at, prerelease: r.prerelease,
-      notes: r.body, url: r.html_url,
-      assets: (r.assets || []).map((a) => ({ name: a.name, size: a.size, url: a.browser_download_url, id: a.id }))
-    }));
+    return mapReleases(await api(endpoint));
   } catch (e) {
+    // Los repositorios publicos se pueden consultar sin token: un token caducado
+    // no debe impedir que se detecten nuevas versiones al arrancar.
+    if (e.status === 401 || e.status === 403) {
+      try {
+        return mapReleases(await api(endpoint, { noAuth: true }));
+      } catch (_) { /* sin acceso ni con ni sin token */ }
+    }
     return [];
   }
 }
