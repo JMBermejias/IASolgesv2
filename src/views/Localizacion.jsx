@@ -13,6 +13,12 @@ export default function Localizacion({ settings, navigate, id }) {
   const [center, setCenter] = useState(DEFAULT_CENTER);
   const [resultado, setResultado] = useState(null);
   const [buscando, setBuscando] = useState(false);
+  // Punto elegido haciendo clic en el mapa. Si existe, manda coordenadas al
+  // buscador en lugar del texto, que es lo que promete el aviso del mapa.
+  const [puntoManual, setPuntoManual] = useState(null);
+  // Los errores se dejan en pantalla: un toast desaparece y el usuario creia
+  // que la busqueda seguia en la zona anterior.
+  const [errorBusqueda, setErrorBusqueda] = useState('');
   const [areaAbierta, setAreaAbierta] = useState(false);
   const [mostrados, setMostrados] = useState(0);   // cuantos de los encontrados se muestran
   const [sel, setSel] = useState([]);
@@ -51,15 +57,28 @@ export default function Localizacion({ settings, navigate, id }) {
     setMostrados(limite);
     setBuscando(true);
     setAnalisis(null);
+    // Antes se dejaban los resultados anteriores en pantalla mientras duraba
+    // la busqueda (minutos si Overpass va lento) y tambien cuando fallaba. Por
+    // eso al escribir otra localidad seguia saliendo Novelda.
+    setResultado(null);
+    setSel([]);
+    setErrorBusqueda('');
     try {
-      const r = await api.customers.search({ ...form, limit: limite });
+      const args = { ...form, limit: limite };
+      if (puntoManual) {
+        args.lat = puntoManual.lat;
+        args.lon = puntoManual.lon;
+      }
+      const r = await api.customers.search(args);
       setResultado(r);
       setCenter(r.center);
+      setPuntoManual(null);
       setSel([]);
       push(r.truncado
         ? `${r.clientes.length} clientes de ${r.total} encontrados. Usa "Ver los ${r.total}" para verlos todos.`
         : `${r.clientes.length} negocios analizados en ${r.categoria.label}`, r.truncado ? 'info' : 'success');
     } catch (e) {
+      setErrorBusqueda(e.message || 'No se ha podido realizar la busqueda.');
       push(e.message, 'error', 7000);
     } finally {
       setBuscando(false);
@@ -208,7 +227,12 @@ export default function Localizacion({ settings, navigate, id }) {
         <div className="grid" style={{ gridTemplateColumns: 'minmax(200px, 2fr) minmax(150px, 1fr) minmax(180px, 1fr) 282px auto', gap: 12, alignItems: 'end' }}>
           <Field label="Ubicación, dirección o negocio">
             <input type="text" value={form.query} placeholder="Ej. Benidorm, Alicante o Calle Mayor 1"
-              onChange={(e) => setForm({ ...form, query: e.target.value })}
+              onChange={(e) => {
+                // Escribir un nombre descarta el punto elegido en el mapa: manda
+                // la nueva consulta, no las coordenadas de la busqueda anterior.
+                setPuntoManual(null);
+                setForm({ ...form, query: e.target.value });
+              }}
               onKeyDown={(e) => e.key === 'Enter' && buscar()} />
           </Field>
           <Field label="Sector">
@@ -256,6 +280,18 @@ export default function Localizacion({ settings, navigate, id }) {
             Mapas y datos: OpenStreetMap + Nominatim + Overpass. Puedes hacer <b>clic en el mapa</b> para mover el centro de búsqueda.
           </span>
         </div>
+        {puntoManual && (
+          <div className="alert info" style={{ marginTop: 10 }}>
+            📍 Buscando alrededor del punto elegido en el mapa ({puntoManual.lat.toFixed(4)}, {puntoManual.lon.toFixed(4)}).
+            Escribe otra ubicación para buscar por nombre.
+          </div>
+        )}
+        {errorBusqueda && (
+          <div className="alert error" style={{ marginTop: 10 }}>
+            <b>La búsqueda no se ha podido completar.</b> {errorBusqueda}
+            <button className="btn sm ghost" style={{ marginLeft: 8 }} onClick={() => setErrorBusqueda('')}>Cerrar</button>
+          </div>
+        )}
       </Card>
 
 
@@ -305,7 +341,7 @@ export default function Localizacion({ settings, navigate, id }) {
                     height={560}
                     dark={['grafito', 'medianoche'].includes(settings?.theme)}
                   />
-                  <div style={{
+                  {buscando && <div style={{
                     position: 'absolute', inset: 0, zIndex: 500, display: 'grid', placeItems: 'center',
                     background: 'color-mix(in srgb, var(--surface) 78%, transparent)', backdropFilter: 'blur(2px)'
                   }}>
@@ -319,7 +355,7 @@ export default function Localizacion({ settings, navigate, id }) {
                         calculando la probabilidad de cada uno.
                       </div>
                     </div>
-                  </div>
+                  </div>}
                 </div>
               )}
               {resultado && (
@@ -332,7 +368,13 @@ export default function Localizacion({ settings, navigate, id }) {
                 onSelectClient={toggle}
                 onClickMap={async (pt) => {
                   const rev = await api.customers.reverse(pt.lat, pt.lon).catch(() => null);
-                  setCenter({ lat: pt.lat, lon: pt.lon, label: rev?.label || 'Punto seleccionado' });
+                  const label = rev?.label || 'Punto seleccionado';
+                  // Guardamos tambien el punto: antes solo se movia el mapa y al
+                  // pulsar Buscar se volvia a geocodificar el texto antiguo, asi
+                  // que la zona nunca cambiaba.
+                  setPuntoManual({ lat: pt.lat, lon: pt.lon, label });
+                  setCenter({ lat: pt.lat, lon: pt.lon, label });
+                  setForm((f) => ({ ...f, query: label }));
                   push('Centro movido. Pulsa Buscar para actualizar los resultados.', 'info');
                 }}
                 dark={['grafito', 'medianoche'].includes(settings?.theme)}
